@@ -30,6 +30,7 @@ from .relevance_based.relevance_analyzer import LRPZPlusFast
 from .relevance_based.relevance_analyzer import LRPEpsilon
 from .relevance_based.relevance_analyzer import LRPEpsilonIgnoreBias
 from .relevance_based.relevance_analyzer import LRPWSquare
+from .relevance_based.relevance_analyzer import LRPInputTimesWSquare
 from .relevance_based.relevance_analyzer import LRPFlat
 from .relevance_based.relevance_analyzer import LRPAlphaBeta
 from .relevance_based.relevance_analyzer import LRPAlpha2Beta1
@@ -86,6 +87,7 @@ analyzers = {
     "lrp.epsilon_IB": LRPEpsilonIgnoreBias,
 
     "lrp.w_square": LRPWSquare,
+    "lrp.input_t_w_square": LRPInputTimesWSquare,
     "lrp.flat": LRPFlat,
 
     "lrp.alpha_beta": LRPAlphaBeta,

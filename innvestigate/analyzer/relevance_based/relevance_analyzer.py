@@ -46,6 +46,7 @@ __all__ = [
     "LRPEpsilonIgnoreBias",
 
     "LRPWSquare",
+    "LRPInputTimesWSquare",
     "LRPFlat",
 
     "LRPAlphaBeta",
@@ -170,6 +171,7 @@ LRP_RULES = {
     "EpsilonIgnoreBias": rrule.EpsilonIgnoreBiasRule,
 
     "WSquare": rrule.WSquareRule,
+    "InputTimesWSquare": rrule.InputTimesWSquareRule,
     "Flat": rrule.FlatRule,
 
     "AlphaBeta": rrule.AlphaBetaRule,
@@ -567,6 +569,14 @@ class LRPWSquare(_LRPFixedParams):
     def __init__(self, model, *args, **kwargs):
         super(LRPWSquare, self).__init__(model, *args,
                                          rule="WSquare", **kwargs)
+
+
+class LRPInputTimesWSquare(_LRPFixedParams):
+    """LRP-analyzer that uses the Input * W**2 rule"""
+
+    def __init__(self, model, *args, **kwargs):
+        super(LRPInputTimesWSquare, self).__init__(model, *args,
+                                         rule="InputTimesWSquare", **kwargs)
 
 
 class LRPFlat(_LRPFixedParams):

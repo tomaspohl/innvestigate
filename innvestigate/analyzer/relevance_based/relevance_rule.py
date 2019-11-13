@@ -44,7 +44,7 @@ __all__ = [
     "EpsilonIgnoreBiasRule",
 
     "WSquareRule",
-    "WSquareRuleTimesInput",
+    "InputTimesWSquareRule",
     "FlatRule",
 
     "AlphaBetaRule",
@@ -183,7 +183,7 @@ class WSquareRule(kgraph.ReverseMappingBase):
 
 
 
-class WSquareRuleTimesInput(kgraph.ReverseMappingBase):
+class InputTimesWSquareRule(kgraph.ReverseMappingBase):
     """Same as W**2 rule but multiplied with the Input."""
 
     def __init__(self, layer, state, copy_weights=False):
