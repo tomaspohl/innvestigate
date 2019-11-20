@@ -57,6 +57,7 @@ __all__ = [
     "LRPAlpha1Beta0IgnoreBias",
     "LRPZPlus",
     "LRPZPlusSqrt",
+    "LRPZPlusSqrtIgnoreBias",
     "LRPZPlusFast",
 
     "LRPSequentialPresetA",
@@ -695,6 +696,7 @@ class LRPAlpha1Beta0IgnoreBias(_LRPAlphaBetaFixedParams):
                                                        bias=False,
                                                        **kwargs)
 
+
 class LRPZPlus(LRPAlpha1Beta0IgnoreBias):
     """LRP-analyzer that uses the LRP-alpha-beta rule with a=1,b=0"""
     #TODO: assert that layer inputs are always >= 0
@@ -702,14 +704,28 @@ class LRPZPlus(LRPAlpha1Beta0IgnoreBias):
         super(LRPZPlus, self).__init__(model, *args, **kwargs)
 
 
-class LRPZPlusSqrt(LRPAlpha1Beta0IgnoreBias):
+class LRPZPlusSqrt(LRPAlpha1Beta0):
     """
-    The LRPZPlusSqrt rule uses the the ZPlus rule,
+    The LRPZPlusSqrt rule uses the LRP-alpha-beta rule with a=1,b=0,
     but takes the square root of the positive contributions.
     """
     #TODO: assert that layer inputs are always >= 0
     def __init__(self, model, *args, **kwargs):
-        super(LRPZPlusSqrt, self).__init__(model, *args, **kwargs)
+        super(LRPZPlusSqrt, self).__init__(model, *args,
+                                           activators_sqrt=True,
+                                           **kwargs)
+
+
+class LRPZPlusSqrtIgnoreBias(LRPAlpha1Beta0IgnoreBias):
+    """
+    The LRPZPlusSqrt rule uses the LRP-alpha-beta rule with a=1,b=0 and ignored bias,
+    but takes the square root of the positive contributions.
+    """
+    # TODO: assert that layer inputs are always >= 0
+    def __init__(self, model, *args, **kwargs):
+        super(LRPZPlusSqrtIgnoreBias, self).__init__(model, *args,
+                                                     activators_sqrt=True,
+                                                     **kwargs)
 
 
 class LRPZPlusFast(_LRPFixedParams):
