@@ -357,8 +357,8 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
             return [keras.layers.Subtract()([times_alpha(a), times_beta(b)])
                         for a, b in zip(activator_relevances, inhibitor_relevances)]
         elif self._activators_sqrt and not self._beta: #if wanna compute the square root of the activators (but only if beta is zero)
-            print('Applying square root to positive contributions...')
-            return [K.sqrt(np.array(activator_relevances))]
+            print('Applying square root to positive contributions...(also tensor!)')
+            return [K.sqrt(K.constant(np.array(activator_relevances)))]
         else:
             return activator_relevances
 
