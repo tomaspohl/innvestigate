@@ -292,9 +292,9 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
             positive_weights = [x * (x > 0) for x in weights]
             negative_weights = [x * (x < 0) for x in weights]
 
-            # If we wanna sqrt() the pos. weights (i.e. rule ZplusSqrt)
+            # If we wanna sqrt() the pos. weights
             # CAUTION! Not tested for copy_weights
-            if self._activators_sqrt and not self._beta:
+            if self._activators_sqrt:
                 print('Lets sqrt() the positive weights now...(from copy_weights)')
                 positive_weights = [np.sqrt(x) for x in positive_weights]
         else:
@@ -305,7 +305,7 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
             negative_weights = [x * iK.to_floatx(x < 0) for x in weights]
 
             # If we wanna sqrt() the pos. weights (i.e. rule ZplusSqrt)
-            if self._activators_sqrt and not self._beta:
+            if self._activators_sqrt:
                 print('Lets sqrt() the positive weights now...')
                 positive_weights = [K.sqrt(x) for x in positive_weights]
 
