@@ -297,11 +297,11 @@ class FlatSquareRule(FlatRule):
                for a, b in zip(Rs, Zs)]
         # Redistribute the relevances along the gradient.
         g = grad(Xs+Ys+tmp)
-        # Apply square()
-        print('G: ', g)
-        g_square = keras.layers.Lambda(lambda x: x ** 2)(g)
-        print('G_Square: ', g_square)
-        tmp = iutils.to_list(g_square)
+        # Make sure the relevance is always > 0
+        g = keras.layers.Lambda(K.abs)(g)
+        # Apply log()
+        g = keras.layers.Lambda(K.log)(g)
+        tmp = iutils.to_list(g)
 
         return tmp
 
