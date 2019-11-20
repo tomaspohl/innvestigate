@@ -276,7 +276,7 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
                  beta=None,
                  bias=True,
                  copy_weights=False,
-                 activators_sqrt=False):
+                 activators_sqrt=True):
         alpha, beta = rutils.assert_infer_lrp_alpha_beta_param(alpha, beta, self)
         self._alpha = alpha
         self._beta = beta
