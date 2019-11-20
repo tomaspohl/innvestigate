@@ -298,7 +298,7 @@ class FlatSquareRule(FlatRule):
         # Redistribute the relevances along the gradient.
         g = grad(Xs+Ys+tmp)
         # Apply square()
-        g_square = [x ** 2 for x in g]
+        g_square = g ** 2
         tmp = iutils.to_list(g_square)
 
         return tmp
