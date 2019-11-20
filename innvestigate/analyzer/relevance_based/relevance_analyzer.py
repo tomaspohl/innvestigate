@@ -593,11 +593,12 @@ class LRPFlat(_LRPFixedParams):
 class LRPAlphaBeta(LRP):
     """ Base class for LRP AlphaBeta"""
 
-    def __init__(self, model, alpha=None, beta=None, bias=True, *args, **kwargs):
+    def __init__(self, model, alpha=None, beta=None, bias=True, activators_sqrt=False, *args, **kwargs):
         alpha, beta = rutils.assert_infer_lrp_alpha_beta_param(alpha, beta, self)
         self._alpha = alpha
         self._beta = beta
         self._bias = bias
+        self._activators_sqrt = activators_sqrt
 
         class AlphaBetaProxyRule(rrule.AlphaBetaRule):
             """
@@ -605,12 +606,14 @@ class LRPAlphaBeta(LRP):
             for the purpose of passing along the chosen parameters from
             the LRP analyzer class to the decopmosition rules.
             """
+
             def __init__(self, *args, **kwargs):
                 super(AlphaBetaProxyRule, self).__init__(*args,
-                                                              alpha=alpha,
-                                                              beta=beta,
-                                                              bias=bias,
-                                                              **kwargs)
+                                                         alpha=alpha,
+                                                         beta=beta,
+                                                         bias=bias,
+                                                         activators_sqrt=activators_sqrt,
+                                                         **kwargs)
 
         super(LRPAlphaBeta, self).__init__(model, *args,
                                            rule=AlphaBetaProxyRule,
