@@ -300,6 +300,10 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
             positive_weights = [x * iK.to_floatx(x > 0) for x in weights]
             negative_weights = [x * iK.to_floatx(x < 0) for x in weights]
 
+            if self._activators_sqrt and not self._beta:
+                print('Lets sqrt() the positive weights now...')
+                positive_weights = [K.sqrt(x) for x in positive_weights]
+
         self._layer_wo_act_positive = kgraph.copy_layer_wo_activation(
             layer,
             keep_bias=bias,
@@ -359,9 +363,9 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
                                      Xs_pos, Xs_neg)
             return [keras.layers.Subtract()([times_alpha(a), times_beta(b)])
                         for a, b in zip(activator_relevances, inhibitor_relevances)]
-        elif self._activators_sqrt and not self._beta: #if wanna compute the square root of the activators (but only if beta is zero)
-            print('Applying square root to positive contributions...')
-            return [keras.layers.Lambda(K.sqrt)(activator_relevances[0])]
+        # elif self._activators_sqrt and not self._beta: #if wanna compute the square root of the activators (but only if beta is zero)
+        #     print('Applying square root to positive contributions...')
+        #     return [keras.layers.Lambda(K.sqrt)(activator_relevances[0])]
         else:
             return activator_relevances
 
