@@ -47,6 +47,7 @@ __all__ = [
     "InputTimesWSquareRule",
     "FlatRule",
     "FlatSqrtRule",
+    "FlatSquareRule",
 
     "AlphaBetaRule",
     "AlphaBetaIgnoreBiasRule",
@@ -272,6 +273,33 @@ class FlatSqrtRule(FlatRule):
         # Apply sqrt()
         g_sqrt = keras.layers.Lambda(K.sqrt)(g)
         tmp = iutils.to_list(g_sqrt)
+
+        return tmp
+
+
+
+class FlatSquareRule(FlatRule):
+    """
+    Same as W**2 rule but sets all weights to ones (=FlatRule)
+    and also takes the square of the Relevance.
+    """
+
+    def apply(self, Xs, Ys, Rs, reverse_state):
+        grad = ilayers.GradientWRT(len(Xs))
+        # Create dummy forward path to take the derivative below.
+        Ys = kutils.apply(self._layer_wo_act_b, Xs)
+
+        # Compute the sum of the weights.
+        ones = ilayers.OnesLike()(Xs)
+        Zs = iutils.to_list(self._layer_wo_act_b(ones))
+        # Weight the incoming relevance.
+        tmp = [ilayers.SafeDivide()([a, b])
+               for a, b in zip(Rs, Zs)]
+        # Redistribute the relevances along the gradient.
+        g = grad(Xs+Ys+tmp)
+        # Apply square()
+        g_square = keras.layers.Lambda(K.square)(g)
+        tmp = iutils.to_list(g_square)
 
         return tmp
 
