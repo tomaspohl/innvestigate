@@ -299,7 +299,7 @@ class FlatSquareRule(FlatRule):
         g = grad(Xs+Ys+tmp)
         # Apply square()
         print('G: ', g)
-        g_square = keras.layers.Lambda(K.square)(g)
+        g_square = keras.layers.Lambda(lambda x: x ** 2)(g)
         print('G_Square: ', g_square)
         tmp = iutils.to_list(g_square)
 
