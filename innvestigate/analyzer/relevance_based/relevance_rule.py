@@ -272,7 +272,7 @@ class FlatSqrtRule(FlatRule):
         tmp = iutils.to_list(grad(Xs+Ys+tmp))
         print('TMP: ', tmp)
 
-        return tmp
+        return K.sqrt(tmp)
 
 
 
