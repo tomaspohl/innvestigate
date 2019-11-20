@@ -26,6 +26,7 @@ from .relevance_based.relevance_analyzer import LRP
 from .relevance_based.relevance_analyzer import LRPZ
 from .relevance_based.relevance_analyzer import LRPZIgnoreBias
 from .relevance_based.relevance_analyzer import LRPZPlus
+from .relevance_based.relevance_analyzer import LRPZPlusSqrt
 from .relevance_based.relevance_analyzer import LRPZPlusFast
 from .relevance_based.relevance_analyzer import LRPEpsilon
 from .relevance_based.relevance_analyzer import LRPEpsilonIgnoreBias
