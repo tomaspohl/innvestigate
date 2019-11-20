@@ -359,7 +359,7 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
         elif self._activators_sqrt and not self._beta: #if wanna compute the square root of the activators (but only if beta is zero)
             print('Applying square root to positive contributions...(also tensor!)')
             print('activator_relevances: ', activator_relevances)
-            return K.sqrt(activator_relevances)
+            return [K.sqrt(activator_relevances[0])]
         else:
             return activator_relevances
 
