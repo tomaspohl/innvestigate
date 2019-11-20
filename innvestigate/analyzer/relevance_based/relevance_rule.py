@@ -298,7 +298,9 @@ class FlatSquareRule(FlatRule):
         # Redistribute the relevances along the gradient.
         g = grad(Xs+Ys+tmp)
         # Apply square()
-        g_square = g ** 2
+        print('G: ', g)
+        g_square = keras.layers.Lambda(K.square)(g)
+        print('G_Square: ', g_square)
         tmp = iutils.to_list(g_square)
 
         return tmp
