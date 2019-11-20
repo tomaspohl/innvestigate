@@ -270,7 +270,7 @@ class FlatSqrtRule(FlatRule):
         # Redistribute the relevances along the gradient.
         g = grad(Xs+Ys+tmp)
         # Apply sqrt()
-        g_sqrt = K.sqrt(g)
+        g_sqrt = keras.layers.Lambda(K.sqrt)(g)
         tmp = iutils.to_list(g_sqrt)
 
         return tmp
