@@ -268,11 +268,12 @@ class FlatSqrtRule(FlatRule):
         tmp = [ilayers.SafeDivide()([a, b])
                for a, b in zip(Rs, Zs)]
         # Redistribute the relevances along the gradient.
-        print('GRAD: ', grad(Xs+Ys+tmp))
-        tmp = iutils.to_list(grad(Xs+Ys+tmp))
-        print('TMP: ', tmp)
+        g = grad(Xs+Ys+tmp)
+        # Apply sqrt()
+        g_sqrt = K.sqrt(g)
+        tmp = iutils.to_list(g_sqrt)
 
-        return K.sqrt(tmp)
+        return tmp
 
 
 
