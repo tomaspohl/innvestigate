@@ -56,6 +56,7 @@ __all__ = [
     "LRPAlpha1Beta0",
     "LRPAlpha1Beta0IgnoreBias",
     "LRPZPlus",
+    "LRPZPlusSqrt",
     "LRPZPlusFast",
 
     "LRPSequentialPresetA",
@@ -183,6 +184,7 @@ LRP_RULES = {
     "Alpha1Beta0IgnoreBias": rrule.Alpha1Beta0IgnoreBiasRule,
 
     "ZPlus": rrule.ZPlusRule,
+    "ZPlusSqrt": rrule.ZPlusSqrtRule,
     "ZPlusFast": rrule.ZPlusFastRule,
     "Bounded": rrule.BoundedRule,
 }
@@ -698,6 +700,17 @@ class LRPZPlus(LRPAlpha1Beta0IgnoreBias):
     #TODO: assert that layer inputs are always >= 0
     def __init__(self, model, *args, **kwargs):
         super(LRPZPlus, self).__init__(model, *args, **kwargs)
+
+
+class LRPZPlusSqrt(LRPAlpha1Beta0IgnoreBias):
+    """
+    The LRPZPlusSqrt rule uses the the ZPlus rule,
+    but takes the square root of the positive contributions.
+    """
+    #TODO: assert that layer inputs are always >= 0
+    def __init__(self, model, *args, **kwargs):
+        super(LRPZPlusSqrt, self).__init__(model, *args,
+                                       rule="ZPlusSqrt", **kwargs)
 
 
 class LRPZPlusFast(_LRPFixedParams):

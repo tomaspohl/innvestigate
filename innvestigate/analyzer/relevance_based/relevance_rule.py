@@ -58,6 +58,7 @@ __all__ = [
 
     "ZPlusRule",
     "ZPlusFastRule",
+    "ZPlusSqrtRule",
     "BoundedRule"
 ]
 
@@ -274,10 +275,12 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
                  alpha=None,
                  beta=None,
                  bias=True,
-                 copy_weights=False):
+                 copy_weights=False,
+                 activators_sqrt=False):
         alpha, beta = rutils.assert_infer_lrp_alpha_beta_param(alpha, beta, self)
         self._alpha = alpha
         self._beta = beta
+        self._activators_sqrt = activators_sqrt
 
         # prepare positive and negative weights for computing positive
         # and negative preactivations z in apply_accordingly.
@@ -346,13 +349,15 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
                                  self._layer_wo_act_negative,
                                  Xs_pos, Xs_neg)
 
-        if self._beta: #only compute beta-weighted contributions of beta is not zero
+        if self._beta: #only compute beta-weighted contributions if beta is not zero
             # xpos*wneg + xneg*wpos
             inhibitor_relevances = f(self._layer_wo_act_negative,
                                      self._layer_wo_act_positive,
                                      Xs_pos, Xs_neg)
             return [keras.layers.Subtract()([times_alpha(a), times_beta(b)])
                         for a, b in zip(activator_relevances, inhibitor_relevances)]
+        elif self._activators_sqrt and not self._beta: #if wanna compute the square root of the activators (but only if beta is zero)
+            return K.sqrt(activator_relevances)
         else:
             return activator_relevances
 
@@ -495,6 +500,19 @@ class ZPlusRule(Alpha1Beta0IgnoreBiasRule):
     def __init__(self, *args, **kwargs):
         super(ZPlusRule, self).__init__(*args, **kwargs)
 
+
+class ZPlusSqrtRule(Alpha1Beta0IgnoreBiasRule):
+    """
+    The ZPlus square root rule is a special case of the AlphaBetaRule
+    for alpha=1, beta=0, which assumes inputs x >= 0, ignores the bias
+    and takes the square root of the positive contributions.
+    """
+
+    # TODO: assert that layer inputs are always >= 0
+    def __init__(self, *args, **kwargs):
+        super(ZPlusSqrtRule, self).__init__(*args,
+                                            activators_sqrt=True,
+                                            **kwargs)
 
 
 class ZPlusFastRule(kgraph.ReverseMappingBase):
