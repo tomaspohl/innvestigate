@@ -709,8 +709,7 @@ class LRPZPlusSqrt(LRPAlpha1Beta0IgnoreBias):
     """
     #TODO: assert that layer inputs are always >= 0
     def __init__(self, model, *args, **kwargs):
-        super(LRPZPlusSqrt, self).__init__(model, *args,
-                                       rule="ZPlusSqrt", **kwargs)
+        super(LRPZPlusSqrt, self).__init__(model, *args, **kwargs)
 
 
 class LRPZPlusFast(_LRPFixedParams):
