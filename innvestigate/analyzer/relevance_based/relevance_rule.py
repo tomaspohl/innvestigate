@@ -502,7 +502,7 @@ class ZPlusRule(Alpha1Beta0IgnoreBiasRule):
         super(ZPlusRule, self).__init__(*args, **kwargs)
 
 
-class ZPlusSqrtRule(Alpha1Beta0IgnoreBiasRule):
+class ZPlusSqrtRule(AlphaBetaRule):
     """
     The ZPlus square root rule is a special case of the AlphaBetaRule
     for alpha=1, beta=0, which assumes inputs x >= 0, ignores the bias
@@ -512,6 +512,9 @@ class ZPlusSqrtRule(Alpha1Beta0IgnoreBiasRule):
     # TODO: assert that layer inputs are always >= 0
     def __init__(self, *args, **kwargs):
         super(ZPlusSqrtRule, self).__init__(*args,
+                                            alpha=1,
+                                            beta=0,
+                                            bias=False,
                                             activators_sqrt=True,
                                             **kwargs)
 
