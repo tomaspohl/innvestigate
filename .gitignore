@@ -125,3 +125,6 @@ examples/gpu-logs
 
 # ignore nbconvert script output
 examples/nbconvert_tmp
+
+# PyCharm stuff
+.idea
