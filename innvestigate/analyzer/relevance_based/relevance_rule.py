@@ -299,6 +299,9 @@ class FlatSquareRule(FlatRule):
         g = grad(Xs+Ys+tmp)
         # Make sure the relevance is always > 0
         g = keras.layers.Lambda(K.abs)(g)
+        # Move the Log function 1 unit to the left
+        g_ones = ilayers.OnesLike()(g)
+        g = keras.layers.Add()([g, g_ones])
         # Apply log()
         g = keras.layers.Lambda(K.log)(g)
         tmp = iutils.to_list(g)
