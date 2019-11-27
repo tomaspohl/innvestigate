@@ -288,11 +288,11 @@ class FlatSquareRule(FlatRule):
         grad = ilayers.GradientWRT(len(Xs))
 
 
-        print('MAX RS: ', np.max(Rs))
-        print('MIN RS: ', np.min(Rs))
+        print('MAX RS: ', K.max(Rs))
+        print('MIN RS: ', K.min(Rs))
 
         # Custom:
-        Xs = keras.layers.Lambda(K.square)(Xs)
+        # Xs = keras.layers.Lambda(K.square)(Xs)
 
 
         # Create dummy forward path to take the derivative below.
