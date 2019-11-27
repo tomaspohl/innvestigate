@@ -286,6 +286,15 @@ class FlatSquareRule(FlatRule):
 
     def apply(self, Xs, Ys, Rs, reverse_state):
         grad = ilayers.GradientWRT(len(Xs))
+
+
+        print('MAX RS: ', np.max(Rs))
+        print('MIN RS: ', np.min(Rs))
+
+        # Custom:
+        Xs = keras.layers.Lambda(K.square)(Xs)
+
+
         # Create dummy forward path to take the derivative below.
         Ys = kutils.apply(self._layer_wo_act_b, Xs)
 
