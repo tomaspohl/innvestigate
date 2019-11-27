@@ -289,24 +289,39 @@ class FlatSquareRule(FlatRule):
         # Create dummy forward path to take the derivative below.
         Ys = kutils.apply(self._layer_wo_act_b, Xs)
 
+        # Get activations.
+        Zs = kutils.apply(self._layer_wo_act_b, Xs)
+
+
+
         # Compute the sum of the weights.
-        ones = ilayers.OnesLike()(Xs)
-        Zs = iutils.to_list(self._layer_wo_act_b(ones))
+        # ones = ilayers.OnesLike()(Xs)
+        # Zs = iutils.to_list(self._layer_wo_act_b(ones))
         # Weight the incoming relevance.
         tmp = [ilayers.SafeDivide()([a, b])
                for a, b in zip(Rs, Zs)]
         # Redistribute the relevances along the gradient.
-        g = grad(Xs+Ys+tmp)
+        # g = grad(Xs+Ys+tmp)
+
+        # Our contrib:
         # Make sure the relevance is always > 0
-        g = keras.layers.Lambda(K.abs)(g)
+        # g = keras.layers.Lambda(K.abs)(g)
         # Move the Log function 1 unit to the left
         # g_ones = ilayers.OnesLike()(g)
         # g = keras.layers.Add()([g, g_ones])
         # Apply exp()
-        g = keras.layers.Lambda(K.exp)(g)
-        tmp = iutils.to_list(g)
+        # g = keras.layers.Lambda(K.exp)(g)
 
-        return tmp
+        # Redistribute the relevance along the gradient.
+        tmp = iutils.to_list(grad(Xs+Ys+tmp))
+
+        # Re-weight relevance with the input values.
+        return [keras.layers.Multiply()([a, b])
+                for a, b in zip(Xs, tmp)]
+
+        # tmp = iutils.to_list(g)
+
+        # return tmp
 
 
 
