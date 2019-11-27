@@ -288,8 +288,8 @@ class FlatSquareRule(FlatRule):
         grad = ilayers.GradientWRT(len(Xs))
 
 
-        print('MAX RS: ', K.max(Rs))
-        print('MIN RS: ', K.min(Rs))
+        print('MAX RS: ', K.max(Rs).eval())
+        print('MIN RS: ', K.min(Rs).eval())
 
         # Custom:
         # Xs = keras.layers.Lambda(K.square)(Xs)
