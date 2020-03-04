@@ -404,6 +404,8 @@ class LRP(base.ReverseAnalyzerBase):
         self._rules_use_conditions = use_conditions
         self._rules = rules
 
+        print("RULES: ", rules)
+
         # FINALIZED constructor.
         super(LRP, self).__init__(model, *args, **kwargs)
 
