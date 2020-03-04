@@ -151,8 +151,6 @@ class AnalyzerBase(object):
 
         :param X: Input as expected by model.
         """
-
-        print("We are inside the analyze(self, X) in base.py.")
         raise NotImplementedError()
 
     def _get_state(self):
@@ -472,7 +470,7 @@ class AnalyzerNetworkBase(AnalyzerBase):
           should be an integer with the index for the chosen neuron.
         """
 
-        print("We are inside the analyze(self, X, neuron_selection=None)) in base.py.")
+        print("We are inside the analyze(self, X, neuron_selection=None) in base.py.")
 
         if not hasattr(self, "_analyzer_model"):
             self.create_analyzer_model()

@@ -243,6 +243,9 @@ class FlatRule(WSquareRule):
                 weights = weights[:-1]
             weights = [K.ones_like(x) for x in weights]
 
+        # ADDED by me: keep track of the layer
+        self.layer = layer
+
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
             keep_bias=False,
@@ -287,9 +290,7 @@ class FlatSquareRule(FlatRule):
     def apply(self, Xs, Ys, Rs, reverse_state):
         grad = ilayers.GradientWRT(len(Xs))
 
-
-        print('MAX RS: ', K.max(Rs).eval())
-        print('MIN RS: ', K.min(Rs).eval())
+        print(self.layer)
 
         # Custom:
         # Xs = keras.layers.Lambda(K.square)(Xs)
