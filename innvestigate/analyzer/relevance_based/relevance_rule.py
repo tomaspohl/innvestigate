@@ -200,6 +200,9 @@ class InputTimesWSquareRule(kgraph.ReverseMappingBase):
             weights = weights[:-1]
         weights = [x**2 for x in weights]
 
+        # ADDED by me: keep track of the layer
+        self.layer = layer
+
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
             keep_bias=False,
@@ -208,6 +211,10 @@ class InputTimesWSquareRule(kgraph.ReverseMappingBase):
 
 
     def apply(self, Xs, Ys, Rs, reverse_state):
+
+        print("Printing the layer: ")
+        print(self.layer)
+
         grad = ilayers.GradientWRT(len(Xs))
         # Create dummy forward path to take the derivative below.
         Ys = kutils.apply(self._layer_wo_act_b, Xs)
@@ -242,9 +249,6 @@ class FlatRule(WSquareRule):
             if layer.use_bias:
                 weights = weights[:-1]
             weights = [K.ones_like(x) for x in weights]
-
-        # ADDED by me: keep track of the layer
-        self.layer = layer
 
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
