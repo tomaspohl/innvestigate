@@ -338,6 +338,7 @@ class LRP(base.ReverseAnalyzerBase):
 
     def __init__(self, model, *args, **kwargs):
         rule = kwargs.pop("rule", None)
+        print('1st Rule: ', rule)
         input_layer_rule = kwargs.pop("input_layer_rule", None)
 
         self._add_model_softmax_check()
@@ -356,8 +357,10 @@ class LRP(base.ReverseAnalyzerBase):
 
         if isinstance(rule, list):
             # copy refrences
+            print('Is list')
             self._rule = list(rule)
         else:
+            print('Else')
             self._rule = rule
         self._input_layer_rule = input_layer_rule
 
@@ -366,15 +369,18 @@ class LRP(base.ReverseAnalyzerBase):
            isinstance(rule, six.string_types) or
            (inspect.isclass(rule) and issubclass(rule, kgraph.ReverseMappingBase)) # NOTE: All LRP rules inherit from kgraph.ReverseMappingBase
         ):
+            print('1111')
             # the given rule is a single string or single rule implementing cla ss
             use_conditions = True
             rules = [(lambda a, b: True, rule)]
 
         elif not isinstance(rule[0], tuple):
+            print('2222')
             # rule list of rule strings or classes
             use_conditions = False
             rules = list(rule)
         else:
+            print('3333')
             # rule is list of conditioned rules
             use_conditions = True
             rules = rule
