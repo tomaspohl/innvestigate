@@ -421,7 +421,7 @@ class LRP(base.ReverseAnalyzerBase):
         if self._rules_use_conditions is True:
             for condition, rule in self._rules:
                 if condition(layer, reverse_state):
-                    print('#debug', str(rule)) #debug
+                    print('#debug Cond: ', condition, " Rule", str(rule)) #debug
                     rule_class = rule
                     break
         else:
