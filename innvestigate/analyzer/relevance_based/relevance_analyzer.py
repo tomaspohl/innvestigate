@@ -592,7 +592,7 @@ class LRPInputTimesWSquare(_LRPFixedParams):
 
     def __init__(self, model, *args, **kwargs):
         super(LRPInputTimesWSquare, self).__init__(model, *args,
-                                         rule=["LRPEpsilon", "LRPEpsilon", "LRPEpsilon",
+                                         rule=["Epsilon", "Epsilon", "Epsilon",
                                                "Alpha1Beta0", "Alpha1Beta0", "Alpha1Beta0", "Alpha1Beta0",
                                                "InputTimesWSquare"], **kwargs)
 
