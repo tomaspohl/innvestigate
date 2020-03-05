@@ -67,8 +67,16 @@ __all__ = [
 
     "LRPSequentialPresetAFlat",
     "LRPSequentialPresetBFlat",
+
+    "LRPComposite"
 ]
 
+
+# Used when checking if the number of allowed layers matches the number of specified rules
+ALLOWED_LAYERS_FOR_COMPOSITE_LRP = (
+    keras.layers.convolutional.Conv3D,
+    keras.layers.core.Dense
+)
 
 ###############################################################################
 ###############################################################################
@@ -591,10 +599,7 @@ class LRPInputTimesWSquare(_LRPFixedParams):
     """LRP-analyzer that uses the Input * W**2 rule"""
 
     def __init__(self, model, *args, **kwargs):
-        super(LRPInputTimesWSquare, self).__init__(model, *args,
-                                         rule=["Epsilon", "Epsilon", "Epsilon",
-                                               "Alpha1Beta0", "Alpha1Beta0", "Alpha1Beta0", "Alpha1Beta0",
-                                               "InputTimesWSquare"], **kwargs)
+        super(LRPInputTimesWSquare, self).__init__(model, *args, rule="InputTimesWSquare", **kwargs)
 
 
 class LRPFlat(_LRPFixedParams):
@@ -618,6 +623,24 @@ class LRPFlatSquare(_LRPFixedParams):
     def __init__(self, model, *args, **kwargs):
         super(LRPFlatSquare, self).__init__(model, *args,
                                       rule="FlatSquare", **kwargs)
+
+
+class LRPComposite(LRP):
+    """Composite LRP -- The user can define a rule for each layer in the model."""
+
+    def __init__(self, model, rules, *args, **kwargs):
+        # Check if the number of specified rules match the number of Conv and Dense layers in the model
+        l_count = 0
+
+        for l in model.layers:
+            if isinstance(l, ALLOWED_LAYERS_FOR_COMPOSITE_LRP):
+                l_count += 1
+
+        assert len(rules) == l_count, "Number of specified rules must match the number of Conv and Dense layers in the model." + \
+                         " Number of rules: " + str(len(rules)) + ". Number of Conv and Dense layers: " + str(l_count)
+
+        super(LRPComposite, self).__init__(model, *args,
+                                      rule=rules, **kwargs)
 
 
 class LRPAlphaBeta(LRP):
