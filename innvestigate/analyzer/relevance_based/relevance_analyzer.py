@@ -346,7 +346,6 @@ class LRP(base.ReverseAnalyzerBase):
 
     def __init__(self, model, *args, **kwargs):
         rule = kwargs.pop("rule", None)
-        print('1st Rule: ', rule)
         input_layer_rule = kwargs.pop("input_layer_rule", None)
 
         self._add_model_softmax_check()
@@ -365,10 +364,8 @@ class LRP(base.ReverseAnalyzerBase):
 
         if isinstance(rule, list):
             # copy refrences
-            print('Is list')
             self._rule = list(rule)
         else:
-            print('Else')
             self._rule = rule
         self._input_layer_rule = input_layer_rule
 
@@ -377,18 +374,15 @@ class LRP(base.ReverseAnalyzerBase):
            isinstance(rule, six.string_types) or
            (inspect.isclass(rule) and issubclass(rule, kgraph.ReverseMappingBase)) # NOTE: All LRP rules inherit from kgraph.ReverseMappingBase
         ):
-            print('1111')
             # the given rule is a single string or single rule implementing cla ss
             use_conditions = True
             rules = [(lambda a, b: True, rule)]
 
         elif not isinstance(rule[0], tuple):
-            print('2222')
             # rule list of rule strings or classes
             use_conditions = False
             rules = list(rule)
         else:
-            print('3333')
             # rule is list of conditioned rules
             use_conditions = True
             rules = rule
@@ -418,8 +412,6 @@ class LRP(base.ReverseAnalyzerBase):
         self._rules_use_conditions = use_conditions
         self._rules = rules
 
-        print("RULES: ", rules)
-
         # FINALIZED constructor.
         super(LRP, self).__init__(model, *args, **kwargs)
 
@@ -429,7 +421,7 @@ class LRP(base.ReverseAnalyzerBase):
         if self._rules_use_conditions is True:
             for condition, rule in self._rules:
                 if condition(layer, reverse_state):
-                    print('#debug Cond: ', condition, " Rule", str(rule)) #debug
+                    ##print('#debug: ', str(rule)) #debug
                     rule_class = rule
                     break
         else:
@@ -443,7 +435,7 @@ class LRP(base.ReverseAnalyzerBase):
             rule_class = LRP_RULES[rule_class]
         rule = rule_class(layer, reverse_state)
 
-        print("My debug: ", rule)
+        print("Rule:", rule)
         return rule.apply
 
     def _create_analysis(self, *args, **kwargs):
@@ -623,24 +615,6 @@ class LRPFlatSquare(_LRPFixedParams):
     def __init__(self, model, *args, **kwargs):
         super(LRPFlatSquare, self).__init__(model, *args,
                                       rule="FlatSquare", **kwargs)
-
-
-class LRPComposite(LRP):
-    """Composite LRP -- The user can define a rule for each layer in the model."""
-
-    def __init__(self, model, rules, *args, **kwargs):
-        # Check if the number of specified rules match the number of Conv and Dense layers in the model
-        l_count = 0
-
-        for l in model.layers:
-            if isinstance(l, ALLOWED_LAYERS_FOR_COMPOSITE_LRP):
-                l_count += 1
-
-        assert len(rules) == l_count, "Number of specified rules must match the number of Conv and Dense layers in the model." + \
-                         " Number of rules: " + str(len(rules)) + ". Number of Conv and Dense layers: " + str(l_count)
-
-        super(LRPComposite, self).__init__(model, *args,
-                                      rule=rules, **kwargs)
 
 
 class LRPAlphaBeta(LRP):
@@ -879,3 +853,23 @@ class LRPSequentialPresetBFlat(LRPSequentialPresetB):
                                                 *args,
                                                 input_layer_rule="Flat",
                                                 **kwargs)
+
+
+
+
+class LRPComposite(LRP):
+    """Composite LRP -- The user can define a rule for each layer in the model."""
+
+    def __init__(self, model, rules, *args, **kwargs):
+        # Check if the number of specified rules match the number of Conv and Dense layers in the model
+        l_count = 0
+
+        for l in model.layers:
+            if isinstance(l, ALLOWED_LAYERS_FOR_COMPOSITE_LRP):
+                l_count += 1
+
+        assert len(rules) == l_count, "Number of specified rules must match the number of Conv and Dense layers in the model." + \
+                         " Number of rules: " + str(len(rules)) + ". Number of Conv and Dense layers: " + str(l_count)
+
+        super(LRPComposite, self).__init__(model, *args,
+                                      rule=rules, **kwargs)
