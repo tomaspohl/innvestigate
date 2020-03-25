@@ -75,7 +75,8 @@ __all__ = [
 # Used when checking if the number of allowed layers matches the number of specified rules
 ALLOWED_LAYERS_FOR_COMPOSITE_LRP = (
     keras.layers.convolutional.Conv3D,
-    keras.layers.core.Dense
+    keras.layers.core.Dense,
+    keras.layers.core.Lambda
 )
 
 ###############################################################################
@@ -200,6 +201,8 @@ LRP_RULES = {
     "ZPlusSqrt": rrule.ZPlusSqrtRule,
     "ZPlusFast": rrule.ZPlusFastRule,
     "Bounded": rrule.BoundedRule,
+
+    "MinTakeMost": rrule.MinTakeMostRule
 }
 
 
@@ -854,22 +857,147 @@ class LRPSequentialPresetBFlat(LRPSequentialPresetB):
                                                 input_layer_rule="Flat",
                                                 **kwargs)
 
-
+# TODO
+class LRPMinTakeMost(LRP):
+    pass
 
 
 class LRPComposite(LRP):
     """Composite LRP -- The user can define a rule for each layer in the model."""
 
     def __init__(self, model, rules, *args, **kwargs):
-        # Check if the number of specified rules match the number of Conv and Dense layers in the model
+        self._check_rules(model, rules)
+
+        super(LRPComposite, self).__init__(model, *args,
+                                      rule=rules, **kwargs)
+
+    def _check_rules(self, model, rules):
+        """
+        Check if the number of specified rules match the number of layers in the model.
+
+        :param model: Keras model
+        :param rules: List of rules specifying relevance propagation strategy for each layer in the model
+        """
         l_count = 0
 
         for l in model.layers:
             if isinstance(l, ALLOWED_LAYERS_FOR_COMPOSITE_LRP):
                 l_count += 1
 
-        assert len(rules) == l_count, "Number of specified rules must match the number of Conv and Dense layers in the model." + \
-                         " Number of rules: " + str(len(rules)) + ". Number of Conv and Dense layers: " + str(l_count)
+        assert len(rules) == l_count,\
+            "Number of specified rules must match the number of layers in the model." + \
+            " Number of rules: " + str(len(rules)) + ". Number of layers: " + str(l_count)
+
+
+class LRPModifiedTopLayer(LRPComposite):
+    """
+    LRP with modified top layer based on Montavon et al. (2019).
+
+    The user can define a rule for each layer in the model,
+    but the relevance in the modified output-layer has to be redistributed via the min-take-most strategy.
+    """
+
+    def __init__(self, model, rules, *args, **kwargs):
+        # Save the weights of the top (output) layer
+        self.w, self.b = model.layers[-1].get_weights()
+
+        # Perform top-layer modification
+        model = self._modify_top_layer(model)
+
+        self._check_top_layer_rule(rules)
 
         super(LRPComposite, self).__init__(model, *args,
                                       rule=rules, **kwargs)
+
+    def _check_top_layer_rule(self, rules):
+        """
+        Check if the specified rule for the modified top layer is the special min-take-most strategy.
+
+        :param model: Keras model
+        :param rules: List of rules specifying relevance propagation strategy for each layer in the model
+        """
+
+        assert rules[0] == "MinTakeMost", "The analyzer 'LRPModifiedTopLayer' requires the first rule to be 'MinTakeMost'"
+
+    def _modify_top_layer(self, model):
+        """
+        Modifies the top-layer (output-layer) of the model by replacing it with two layers:
+            1. The first layer represents the log-probability ratios
+            2. The second layer performs a reverse log-sum-exp pooling over these ratios
+
+        :param model: Keras model
+        :return: Modified Keras model
+        """
+
+        # Remove original output layer
+        model = keras.models.Model(inputs=model.input, outputs=model.layers[-2].output)
+
+        # Add the two special layers
+        x = model.layers[-1].output
+        x = keras.layers.Lambda(self._log_probability_ratios)(x)
+        x = keras.layers.Lambda(self._reverse_logsumexp_pooling)(x)
+
+        # Construct the modified model
+        model = keras.models.Model(inputs=model.input, outputs=x)
+
+        return model
+
+    def _log_probability_ratios(self, x):
+        """
+        Function to calculate the log-probability ratios.
+
+        :param x: Input tensor
+        :return: Log-probability ratios
+        """
+
+        num_of_neurons = self.w.shape[-1]
+        out = None
+
+        for curr_neuron_idx in range(num_of_neurons):
+            # Sum up all weights and biases which do not belong to the current neuron (class)
+            w_others = K.sum(self.w, axis=1) - self.w[:, curr_neuron_idx]
+            b_others = K.sum(self.b) - self.b[curr_neuron_idx]
+
+            w_tmp = self.w[:, curr_neuron_idx] - w_others
+            b_tmp = self.b[curr_neuron_idx] - b_others
+
+            z = K.dot(x, w_tmp[:, None]) + b_tmp
+
+            # Append result to the output tensor
+            if out is None:
+                out = z
+            else:
+                out = K.concatenate([out, z])
+
+        return out
+
+    def _reverse_logsumexp_pooling(self, x):
+        """
+        Performs reverse log-sum-exp pooling over each neuron (class)
+        (although calculating it only for the target class should be enough,
+        this way we don't need to track the additional 'target_class' param;
+        might change in the future).
+
+        :param x: Input tensor
+        :return: Reverse log-sum-exp pooling
+        """
+
+        num_of_neurons = x.shape[-1]
+        out = None
+
+        for curr_neuron_idx in range(num_of_neurons):
+            # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx'
+            score = -K.log(K.sum(K.exp(-x)) - K.exp(-x[:, curr_neuron_idx]))
+            score = K.reshape(score, (1,))
+
+            # Append result to the output tensor
+            if out is None:
+                out = score
+            else:
+                out = K.concatenate([out, score])
+
+        # Make sure the output has the correct shape
+        # TODO Check if this works for more than 2 neurons
+        out = K.expand_dims(out, axis=0)
+
+        return out
