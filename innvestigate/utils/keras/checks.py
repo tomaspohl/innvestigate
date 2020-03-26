@@ -229,7 +229,8 @@ def contains_kernel(layer):
 
     # TODO: add test and check this more throughroughly.
     # rely on Keras convention.
-    if hasattr(layer, "kernel") or hasattr(layer, "depthwise_kernel") or hasattr(layer, "pointwise_kernel"):
+    if hasattr(layer, "kernel") or hasattr(layer, "depthwise_kernel") or hasattr(layer, "pointwise_kernel") \
+            or isinstance(layer, keras.layers.core.Lambda): # Lambda was added by ME to handle the top-layer modif.
         print("contains_kernel TRUE: ", layer)
         return True
     else:
