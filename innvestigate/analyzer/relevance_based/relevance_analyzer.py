@@ -210,7 +210,7 @@ class BatchNormalizationReverseLayer(kgraph.ReverseMappingBase):
     """Special BN handler that applies the Z-Rule"""
 
     def __init__(self, layer, state):
-        ##print("in BatchNormalizationReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
+        print("in BatchNormalizationReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
         config = layer.get_config()
 
         self._center = config['center']
@@ -275,7 +275,7 @@ class AddReverseLayer(kgraph.ReverseMappingBase):
     """Special Add layer handler that applies the Z-Rule"""
 
     def __init__(self, layer, state):
-        ##print("in AddReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
+        print("in AddReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
         self._layer_wo_act = kgraph.copy_layer_wo_activation(layer,
                                                              name_template="reversed_kernel_%s")
 
@@ -306,7 +306,7 @@ class AveragePoolingReverseLayer(kgraph.ReverseMappingBase):
     """Special AveragePooling handler that applies the Z-Rule"""
 
     def __init__(self, layer, state):
-        ##print("in AveragePoolingRerseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
+        print("in AveragePoolingRerseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
         self._layer_wo_act = kgraph.copy_layer_wo_activation(layer,
                                                              name_template="reversed_kernel_%s")
 
@@ -414,9 +414,6 @@ class LRP(base.ReverseAnalyzerBase):
 
         self._rules_use_conditions = use_conditions
         self._rules = rules
-
-
-        print('LRP finalized constructor. Model.layers: ', model.layers)
 
         # FINALIZED constructor.
         super(LRP, self).__init__(model, *args, **kwargs)
@@ -897,9 +894,6 @@ class LRPModifiedTopLayer(LRPComposite):
     """
 
     def __init__(self, model, rule, *args, **kwargs):
-
-        print("LRPModifiedTopLayer init")
-
         # Save the weights of the top (output) layer
         self.w, self.b = model.layers[-1].get_weights()
 

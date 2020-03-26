@@ -702,7 +702,6 @@ class ReverseAnalyzerBase(AnalyzerNetworkBase):
             return_all_reversed_tensors=return_all_reversed_tensors)
 
     def _create_analysis(self, model, stop_analysis_at_tensors=[]):
-        print("base.py/_create_analysis, model.layers:", model.layers)
         return_all_reversed_tensors = (
             self._reverse_check_min_max_values or
             self._reverse_check_finite or
