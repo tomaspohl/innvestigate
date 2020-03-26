@@ -864,11 +864,11 @@ class LRPSequentialPresetBFlat(LRPSequentialPresetB):
 class LRPComposite(LRP):
     """Composite LRP -- The user can define a rule for each layer in the model."""
 
-    def __init__(self, model, rules, *args, **kwargs):
-        self._check_rules(model, rules)
+    def __init__(self, model, rule, *args, **kwargs):
+        self._check_rules(model, rule)
 
         super(LRPComposite, self).__init__(model, *args,
-                                      rule=rules, **kwargs)
+                                      rule=rule, **kwargs)
 
     def _check_rules(self, model, rules):
         """
@@ -896,7 +896,7 @@ class LRPModifiedTopLayer(LRPComposite):
     but the relevance in the modified output-layer has to be redistributed via the min-take-most strategy.
     """
 
-    def __init__(self, model, rules, *args, **kwargs):
+    def __init__(self, model, rule, *args, **kwargs):
 
         print("LRPModifiedTopLayer init")
 
@@ -906,10 +906,10 @@ class LRPModifiedTopLayer(LRPComposite):
         # Perform top-layer modification
         model = self._modify_top_layer(model)
 
-        self._check_top_layer_rule(rules)
+        self._check_top_layer_rule(rule)
 
         super(LRPModifiedTopLayer, self).__init__(model, *args,
-                                        rule=rules, **kwargs)
+                                        rule=rule, **kwargs)
 
     def _check_top_layer_rule(self, rules):
         """
