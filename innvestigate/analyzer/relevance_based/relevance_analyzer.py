@@ -415,6 +415,9 @@ class LRP(base.ReverseAnalyzerBase):
         self._rules_use_conditions = use_conditions
         self._rules = rules
 
+
+        print('LRP finalized constructor. Model.layers: ', model.layers)
+
         # FINALIZED constructor.
         super(LRP, self).__init__(model, *args, **kwargs)
 
@@ -856,10 +859,6 @@ class LRPSequentialPresetBFlat(LRPSequentialPresetB):
                                                 *args,
                                                 input_layer_rule="Flat",
                                                 **kwargs)
-
-# TODO
-class LRPMinTakeMost(LRP):
-    pass
 
 
 class LRPComposite(LRP):
