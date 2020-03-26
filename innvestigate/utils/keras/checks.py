@@ -362,7 +362,7 @@ def is_convnet_layer(layer):
         keras.layers.pooling.MaxPooling2D,
         keras.layers.pooling.MaxPooling3D,
     )
-    print("is_convnet_layer: " + str(isinstance(layer, CONVNET_LAYERS)) + " Layer: " + layer)
+    print("is_convnet_layer: ", str(isinstance(layer, CONVNET_LAYERS)),  " Layer: ", str(layer.name))
     return isinstance(layer, CONVNET_LAYERS)
 
 
