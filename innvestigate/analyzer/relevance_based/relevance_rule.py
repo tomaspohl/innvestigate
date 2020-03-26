@@ -34,7 +34,7 @@ from . import utils as rutils
 # DTD rules are special cases of LRP rules with additional assumptions
 __all__ = [
     #dedicated treatment for special layers
-
+    "MinTakeMostRule",
 
     #general rules
     "ZRule",
@@ -680,3 +680,50 @@ class ZPlusFastRule(kgraph.ReverseMappingBase):
         # Re-weight relevance with the input values.
         return [keras.layers.Multiply()([a, b])
                 for a, b in zip(Xs, tmp)]
+
+
+class MinTakeMostRule(kgraph.ReverseMappingBase):
+    """
+    The Min-take-most rule is used for the log-sum-exp pooling layer.
+
+    The weights are set to one, because in our implementation
+    there are no weights between the Log-probability and Log-sum-exp pooling layer.
+    """
+
+    def __init__(self, layer, state, copy_weights=False, bias=True):
+        # Make weights equal to one
+        if copy_weights:
+            weights = layer.get_weights()
+            if layer.use_bias:
+                weights = weights[:-1]
+            weights = [np.ones_like(x) for x in weights]
+        else:
+            weights = layer.weights
+            if layer.use_bias:
+                weights = weights[:-1]
+            weights = [K.ones_like(x) for x in weights]
+
+        self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
+            layer,
+            keep_bias=bias,
+            weights=weights,
+            name_template="reversed_kernel_%s")
+
+    def apply(self, Xs, Ys, Rs, reverse_state):
+        grad = ilayers.GradientWRT(len(Xs))
+
+        Xs_exp = K.exp(-Xs)
+
+        # Get activations.
+        Zs = kutils.apply(self._layer_wo_act_b, Xs_exp)
+
+        # Divide incoming relevance by the activations.
+        tmp = [ilayers.SafeDivide()([a, b])
+               for a, b in zip(Rs, Zs)]
+
+        # Propagate the relevance to input neurons using the gradient.
+        tmp = iutils.to_list(grad(Xs_exp+Zs+tmp))
+
+        # Re-weight relevance with the input values.
+        return [keras.layers.Multiply()([a, b])
+                for a, b in zip(Xs_exp, tmp)]

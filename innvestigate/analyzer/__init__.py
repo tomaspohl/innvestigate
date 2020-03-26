@@ -46,6 +46,7 @@ from .relevance_based.relevance_analyzer import LRPSequentialPresetB
 from .relevance_based.relevance_analyzer import LRPSequentialPresetAFlat
 from .relevance_based.relevance_analyzer import LRPSequentialPresetBFlat
 from .relevance_based.relevance_analyzer import LRPComposite
+from .relevance_based.relevance_analyzer import LRPModifiedTopLayer
 from .deeptaylor import DeepTaylor
 from .deeptaylor import BoundedDeepTaylor
 from .wrapper import WrapperBase
@@ -114,6 +115,7 @@ analyzers = {
     "lrp.sequential_preset_b_flat": LRPSequentialPresetBFlat,
 
     "lrp.composite": LRPComposite,
+    "lrp.modified_top_layer": LRPModifiedTopLayer,
 
     # Deep Taylor
     "deep_taylor": DeepTaylor,
