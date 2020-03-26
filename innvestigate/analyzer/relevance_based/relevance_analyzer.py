@@ -908,8 +908,8 @@ class LRPModifiedTopLayer(LRPComposite):
 
         self._check_top_layer_rule(rules)
 
-        super(LRPComposite, self).__init__(model, *args,
-                                      rule=rules, **kwargs)
+        super(LRPModifiedTopLayer, self).__init__(model, *args,
+                                        rule=rules, **kwargs)
 
     def _check_top_layer_rule(self, rules):
         """
