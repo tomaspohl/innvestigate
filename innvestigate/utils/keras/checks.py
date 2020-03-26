@@ -230,8 +230,10 @@ def contains_kernel(layer):
     # TODO: add test and check this more throughroughly.
     # rely on Keras convention.
     if hasattr(layer, "kernel") or hasattr(layer, "depthwise_kernel") or hasattr(layer, "pointwise_kernel"):
+        print("contains_kernel TRUE: ", layer)
         return True
     else:
+        print("contains_kernel FALSE: ", layer)
         return False
 
 
@@ -360,6 +362,7 @@ def is_convnet_layer(layer):
         keras.layers.pooling.MaxPooling2D,
         keras.layers.pooling.MaxPooling3D,
     )
+    print("is_convnet_layer: " + str(isinstance(layer, CONVNET_LAYERS)) + " Layer: " + layer)
     return isinstance(layer, CONVNET_LAYERS)
 
 
