@@ -897,6 +897,9 @@ class LRPModifiedTopLayer(LRPComposite):
     """
 
     def __init__(self, model, rules, *args, **kwargs):
+
+        print("LRPModifiedTopLayer init")
+
         # Save the weights of the top (output) layer
         self.w, self.b = model.layers[-1].get_weights()
 
