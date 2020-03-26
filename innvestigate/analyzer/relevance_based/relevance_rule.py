@@ -691,6 +691,9 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
     """
 
     def __init__(self, layer, state, copy_weights=False, bias=True):
+
+        print('Init MinTakeMostRule class')
+
         # Make weights equal to one
         if copy_weights:
             weights = layer.get_weights()
@@ -710,6 +713,7 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
             name_template="reversed_kernel_%s")
 
     def apply(self, Xs, Ys, Rs, reverse_state):
+        print('Apply MinTakeMostRule class')
         grad = ilayers.GradientWRT(len(Xs))
 
         Xs_exp = K.exp(-Xs)
