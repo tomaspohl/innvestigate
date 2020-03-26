@@ -850,7 +850,7 @@ class LRPSequentialPresetAFlat(LRPSequentialPresetA):
 
 
 
-#TODO: allow to pass input layer identification by index or id.
+#TODO: allow to pass input layer identiFication by index or id.
 class LRPSequentialPresetBFlat(LRPSequentialPresetB):
     """Special LRP-configuration for ConvNets"""
 

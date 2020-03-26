@@ -581,7 +581,8 @@ class ReverseAnalyzerBase(AnalyzerNetworkBase):
                  reverse_keep_tensors=False,
                  reverse_reapply_on_copied_layers=False,
                  **kwargs):
-        self._reverse_verbose = reverse_verbose
+        #self._reverse_verbose = reverse_verbose
+        self._reverse_verbose = True
         self._reverse_clip_values = reverse_clip_values
         self._reverse_project_bottleneck_layers = (
             reverse_project_bottleneck_layers)
@@ -701,6 +702,7 @@ class ReverseAnalyzerBase(AnalyzerNetworkBase):
             return_all_reversed_tensors=return_all_reversed_tensors)
 
     def _create_analysis(self, model, stop_analysis_at_tensors=[]):
+        print("base.py/_create_analysis, model.layers:", model.layers)
         return_all_reversed_tensors = (
             self._reverse_check_min_max_values or
             self._reverse_check_finite or
