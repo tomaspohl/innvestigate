@@ -743,7 +743,7 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
                                       trainable=False)
 
         self.bias = self.add_weight(name='bias',
-                                    shape=(self.output_dim),
+                                    shape=(self.output_dim, 1),
                                     initializer='zeros',
                                     trainable=False)
 
