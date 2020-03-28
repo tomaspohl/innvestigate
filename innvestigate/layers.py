@@ -670,7 +670,8 @@ class LogProbalityRatio(keras.layers.Layer):
         """
         self.output_dim = output_dim
         self.kernel_initializer = kernel_initializer
-        self.w, self.b,  = weights_original_layer
+        self.weights_original_layer = weights_original_layer
+        self.w, self.b,  = self.weights_original_layer
 
         super(LogProbalityRatio, self).__init__(**kwargs)
 
@@ -706,6 +707,15 @@ class LogProbalityRatio(keras.layers.Layer):
                 out = K.concatenate([out, z])
 
         return out
+
+    def get_config(self):
+        config = {'output_dim': self.output_dim,
+                  'kernel_initializer': self.kernel_initializer,
+                  'weights_original_layer': self.weights_original_layer}
+
+        base_config = super(LogProbalityRatio, self).get_config()
+
+        return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.output_dim)
@@ -747,6 +757,13 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
         out = K.expand_dims(out, axis=0)
 
         return out
+
+    def get_config(self):
+        config = {'output_dim': self.output_dim}
+
+        base_config = super(ReverseLogSumExpPoolingLayer, self).get_config()
+
+        return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.output_dim)
