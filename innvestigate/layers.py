@@ -764,7 +764,7 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
             # ...or if the shape is (2,) during the reverse propagation
             else:
                 score = -K.log(K.sum(K.exp(-x)) - K.exp(-x[curr_neuron_idx]))
-                
+
             score = K.reshape(score, (1,))
 
             # Append result to the output tensor

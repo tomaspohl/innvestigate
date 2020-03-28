@@ -729,8 +729,11 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         tmp = [ilayers.SafeDivide()([a, b])
                for a, b in zip(Rs, Zs)]
 
+
+        print("Why no list?", (Xs_exp+Zs+tmp))
+
         # Propagate the relevance to input neurons using the gradient.
-        tmp = iutils.to_list(grad(Xs_exp+Zs+tmp))
+        tmp = iutils.to_list(grad(iutils.to_list(Xs_exp+Zs+tmp)))
 
         # Re-weight relevance with the input values.
         return [keras.layers.Multiply()([a, b])
