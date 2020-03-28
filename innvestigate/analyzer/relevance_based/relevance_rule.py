@@ -717,7 +717,7 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         grad = ilayers.GradientWRT(len(Xs))
 
         print("XSXSXSXSXSXSXS", Xs)
-        print("Xs SHAPE", Xs.shape)
+        print("Xs SHAPE", len(Xs))
         Xs_exp = K.exp(-K.constant(Xs))
 
         # Get activations.
