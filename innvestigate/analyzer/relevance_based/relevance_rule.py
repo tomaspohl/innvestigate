@@ -718,7 +718,9 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
 
         print("XSXSXSXSXSXSXS", Xs)
         print("Xs SHAPE", len(Xs))
-        Xs_exp = K.exp(-K.constant(Xs))
+        # Xs gives: [<tf.Tensor 'log_probality_ratio_1/concat:0' shape=(?, 2) dtype=float32>],
+        # so take the tensor from the list
+        Xs_exp = K.exp(-Xs[0])
 
         # Get activations.
         Zs = kutils.apply(self._layer_wo_act_b, Xs_exp)
