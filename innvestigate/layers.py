@@ -662,7 +662,7 @@ class GatherND(keras.layers.Layer):
 
 class LogProbalityRatio(keras.layers.Layer):
 
-    def __init__(self, output_dim, kernel_initializer, weights_original_layer, **kwargs):
+    def __init__(self, output_dim, kernel_initializer, bias_initializer, weights_orig_layer, use_bias=True, **kwargs):
         """
         :param output_dim: Output dimension
         :param kernel_initializer: Callable kernel initializer
@@ -670,8 +670,9 @@ class LogProbalityRatio(keras.layers.Layer):
         """
         self.output_dim = output_dim
         self.kernel_initializer = kernel_initializer
-        self.weights_original_layer = weights_original_layer
-        self.w, self.b,  = self.weights_original_layer
+        self.bias_initializer = bias_initializer
+        self.weights_orig_layer = weights_orig_layer
+        self.use_bias = use_bias
 
         super(LogProbalityRatio, self).__init__(**kwargs)
 
@@ -682,6 +683,11 @@ class LogProbalityRatio(keras.layers.Layer):
                                       initializer=self.kernel_initializer,
                                       trainable=False)
 
+        self.bias = self.add_weight(name='bias',
+                                    shape=(self.output_dim),
+                                    initializer=self.bias_initializer,
+                                    trainable=False)
+
         super(LogProbalityRatio, self).build(input_shape)
 
     def call(self, x):
@@ -691,14 +697,12 @@ class LogProbalityRatio(keras.layers.Layer):
         for curr_neuron_idx in range(num_of_neurons):
             # Sum up all weights and biases which do not belong to the current neuron (class)
             w_others = K.sum(self.kernel, axis=1) - self.kernel[:, curr_neuron_idx]
-            b_others = K.sum(self.b) - self.b[curr_neuron_idx]
+            b_others = K.sum(self.bias) - self.bias[curr_neuron_idx]
 
             w_tmp = self.kernel[:, curr_neuron_idx] - w_others
-            b_tmp = self.b[curr_neuron_idx] - b_others
+            b_tmp = self.bias[curr_neuron_idx] - b_others
 
             z = K.dot(x, w_tmp[:, None]) + b_tmp
-
-            z = K.print_tensor(z, message="Values of z: ")
 
             # Append result to the output tensor
             if out is None:
@@ -709,9 +713,11 @@ class LogProbalityRatio(keras.layers.Layer):
         return out
 
     def get_config(self):
-        config = {'output_dim': self.output_dim,
+        config = {'use_bias': True,
+                  'output_dim': self.output_dim,
                   'kernel_initializer': self.kernel_initializer,
-                  'weights_original_layer': self.weights_original_layer}
+                  'bias_initializer': self.bias_initializer,
+                  'weights_original_layer': self.weights_orig_layer}
 
         base_config = super(LogProbalityRatio, self).get_config()
 
@@ -723,8 +729,9 @@ class LogProbalityRatio(keras.layers.Layer):
 
 class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
 
-    def __init__(self, output_dim, **kwargs):
+    def __init__(self, output_dim, use_bias=True, **kwargs):
         self.output_dim = output_dim
+        self.use_bias = use_bias
 
         super(ReverseLogSumExpPoolingLayer, self).__init__(**kwargs)
 
@@ -734,6 +741,11 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
                                       shape=(input_shape[1], self.output_dim),
                                       initializer='ones',
                                       trainable=False)
+
+        self.bias = self.add_weight(name='bias',
+                                    shape=(self.output_dim),
+                                    initializer='zeros',
+                                    trainable=False)
 
         super(ReverseLogSumExpPoolingLayer, self).build(input_shape)
 
@@ -759,7 +771,8 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
         return out
 
     def get_config(self):
-        config = {'output_dim': self.output_dim}
+        config = {'use_bias': True,
+                  'output_dim': self.output_dim}
 
         base_config = super(ReverseLogSumExpPoolingLayer, self).get_config()
 

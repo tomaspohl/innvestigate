@@ -894,7 +894,7 @@ class LRPModifiedTopLayer(LRPComposite):
 
     def __init__(self, model, rule, *args, **kwargs):
         # Save the weights of the original top (output) layer
-        self.weights_original_layer = model.layers[-1].get_weights()
+        self.weights_orig_layer = model.layers[-1].get_weights()
 
         # Perform top-layer modification
         model = self._modify_top_layer(model)
@@ -902,7 +902,7 @@ class LRPModifiedTopLayer(LRPComposite):
         self._check_top_layer_rule(rule)
 
         super(LRPModifiedTopLayer, self).__init__(model, *args,
-                                        rule=rule, **kwargs)
+                                                  rule=rule, **kwargs)
 
     def _check_top_layer_rule(self, rules):
         """
@@ -921,7 +921,16 @@ class LRPModifiedTopLayer(LRPComposite):
         :param dtype: Dtype of the kernel
         :return: Kernel initializer
         """
-        return self.weights_original_layer[0]
+        return self.weights_orig_layer[0]
+
+    def _custom_bias_init(self, shape, dtype=None):
+        """
+        Callable kernel initializer that return the biases of the original replaced layer.
+        :param shape: Shape of the bias
+        :param dtype: Dtype of the bias
+        :return: Bias initializer
+        """
+        return self.weights_orig_layer[-1]
 
 
     def _modify_top_layer(self, model):
@@ -940,8 +949,9 @@ class LRPModifiedTopLayer(LRPComposite):
         # Add the two special layers
         x = model.layers[-1].output
         x = ilayers.LogProbalityRatio(output_dim=2,
-                                      weights_original_layer=self.weights_original_layer,
-                                      kernel_initializer=self._custom_kernel_init)(x)
+                                      kernel_initializer=self._custom_kernel_init,
+                                      bias_initializer=self._custom_bias_init,
+                                      weights_orig_layer=self.weights_orig_layer)(x)
         # x = keras.layers.Lambda(self._log_probability_ratios)(x)
         x = ilayers.ReverseLogSumExpPoolingLayer(output_dim=2)(x)
         # x = keras.layers.Lambda(self._reverse_logsumexp_pooling)(x)
