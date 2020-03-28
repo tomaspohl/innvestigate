@@ -699,7 +699,7 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
             weights = layer.get_weights()
             if layer.use_bias:
                 weights = weights[:-1]
-            weights = [np.ones_like(x) for x in weights]
+            weights = [K.ones_like(x) for x in weights]
         else:
             weights = layer.weights
             if layer.use_bias:
@@ -716,7 +716,9 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         print('Apply MinTakeMostRule class')
         grad = ilayers.GradientWRT(len(Xs))
 
-        Xs_exp = K.exp(-np.array(Xs, dtype='float32'))
+        print("XSXSXSXSXSXSXS", Xs)
+        print("Xs SHAPE", Xs.shape)
+        Xs_exp = K.exp(-K.constant(Xs))
 
         # Get activations.
         Zs = kutils.apply(self._layer_wo_act_b, Xs_exp)
