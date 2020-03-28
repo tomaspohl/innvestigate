@@ -658,3 +658,95 @@ class GatherND(keras.layers.Layer):
 
     def compute_output_shape(self, input_shapes):
         return input_shapes[1][:2]+input_shapes[0][2:]
+
+
+class LogProbalityRatio(keras.layers.Layer):
+
+    def __init__(self, output_dim, kernel_initializer, weights_original_layer, **kwargs):
+        """
+        :param output_dim: Output dimension
+        :param kernel_initializer: Callable kernel initializer
+        :param weights_old: Weights of the original layer which is replaced by this LogProbabilityRatio layer
+        """
+        self.output_dim = output_dim
+        self.kernel_initializer = kernel_initializer
+        self.w, self.b,  = weights_original_layer
+
+        super(LogProbalityRatio, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        # Create a kernel variable for this layer.
+        self.kernel = self.add_weight(name='kernel',
+                                      shape=(input_shape[1], self.output_dim),
+                                      initializer=self.kernel_initializer,
+                                      trainable=False)
+
+        super(LogProbalityRatio, self).build(input_shape)
+
+    def call(self, x):
+        num_of_neurons = self.kernel.shape[-1]
+        out = None
+
+        for curr_neuron_idx in range(num_of_neurons):
+            # Sum up all weights and biases which do not belong to the current neuron (class)
+            w_others = K.sum(self.kernel, axis=1) - self.kernel[:, curr_neuron_idx]
+            b_others = K.sum(self.b) - self.b[curr_neuron_idx]
+
+            w_tmp = self.kernel[:, curr_neuron_idx] - w_others
+            b_tmp = self.b[curr_neuron_idx] - b_others
+
+            z = K.dot(x, w_tmp[:, None]) + b_tmp
+
+            z = K.print_tensor(z, message="Values of z: ")
+
+            # Append result to the output tensor
+            if out is None:
+                out = z
+            else:
+                out = K.concatenate([out, z])
+
+        return out
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.output_dim)
+
+
+class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
+
+    def __init__(self, output_dim, **kwargs):
+        self.output_dim = output_dim
+
+        super(ReverseLogSumExpPoolingLayer, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        # Create a weight variable for this layer.
+        self.kernel = self.add_weight(name='kernel',
+                                      shape=(input_shape[1], self.output_dim),
+                                      initializer='ones',
+                                      trainable=False)
+
+        super(ReverseLogSumExpPoolingLayer, self).build(input_shape)
+
+    def call(self, x):
+        num_of_neurons = x.shape[-1]
+        out = None
+
+        for curr_neuron_idx in range(num_of_neurons):
+            # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx'
+            score = -K.log(K.sum(K.exp(-x)) - K.exp(-x[:, curr_neuron_idx]))
+            score = K.reshape(score, (1,))
+
+            # Append result to the output tensor
+            if out is None:
+                out = score
+            else:
+                out = K.concatenate([out, score])
+
+        # Make sure the output has the correct shape
+        # TODO Check if this works for more than 2 neurons
+        out = K.expand_dims(out, axis=0)
+
+        return out
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.output_dim)
