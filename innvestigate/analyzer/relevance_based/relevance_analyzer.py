@@ -75,8 +75,7 @@ __all__ = [
 # Used when checking if the number of allowed layers matches the number of specified rules
 ALLOWED_LAYERS_FOR_COMPOSITE_LRP = (
     keras.layers.convolutional.Conv3D,
-    keras.layers.core.Dense,
-    keras.layers.core.Lambda
+    keras.layers.core.Dense
 )
 
 ###############################################################################
@@ -862,7 +861,7 @@ class LRPComposite(LRP):
     """Composite LRP -- The user can define a rule for each layer in the model."""
 
     def __init__(self, model, rule, *args, **kwargs):
-        self._check_rules(model, rule)
+        # self._check_rules(model, rule)
 
         super(LRPComposite, self).__init__(model, *args,
                                       rule=rule, **kwargs)
