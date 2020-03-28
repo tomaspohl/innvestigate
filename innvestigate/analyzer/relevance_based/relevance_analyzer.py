@@ -894,8 +894,8 @@ class LRPModifiedTopLayer(LRPComposite):
     """
 
     def __init__(self, model, rule, *args, **kwargs):
-        # Save the weights of the top (output) layer
-        self.w, self.b = model.layers[-1].get_weights()
+        # Save the weights of the original top (output) layer
+        self.weights_original_layer = model.layers[-1].get_weights()
 
         # Perform top-layer modification
         model = self._modify_top_layer(model)
@@ -915,6 +915,16 @@ class LRPModifiedTopLayer(LRPComposite):
 
         assert rules[0] == "MinTakeMost", "The analyzer 'LRPModifiedTopLayer' requires the first rule to be 'MinTakeMost'"
 
+    def _custom_kernel_init(self, shape, dtype=None):
+        """
+        Callable kernel initializer that return the weights of the original replaced layer.
+        :param shape: Shape of the kernel
+        :param dtype: Dtype of the kernel
+        :return: Kernel initializer
+        """
+        return self.weights_original_layer[0]
+
+
     def _modify_top_layer(self, model):
         """
         Modifies the top-layer (output-layer) of the model by replacing it with two layers:
@@ -930,70 +940,74 @@ class LRPModifiedTopLayer(LRPComposite):
 
         # Add the two special layers
         x = model.layers[-1].output
-        x = keras.layers.Lambda(self._log_probability_ratios)(x)
-        x = keras.layers.Lambda(self._reverse_logsumexp_pooling)(x)
+        x = ilayers.LogProbalityRatio(output_dim=2,
+                                      weights_original_layer=self.weights_original_layer,
+                                      kernel_initializer=self._custom_kernel_init)(x)
+        # x = keras.layers.Lambda(self._log_probability_ratios)(x)
+        x = ilayers.ReverseLogSumExpPoolingLayer(output_dim=2)(x)
+        # x = keras.layers.Lambda(self._reverse_logsumexp_pooling)(x)
 
         # Construct the modified model
         model = keras.models.Model(inputs=model.input, outputs=x)
 
         return model
 
-    def _log_probability_ratios(self, x):
-        """
-        Function to calculate the log-probability ratios.
-
-        :param x: Input tensor
-        :return: Log-probability ratios
-        """
-
-        num_of_neurons = self.w.shape[-1]
-        out = None
-
-        for curr_neuron_idx in range(num_of_neurons):
-            # Sum up all weights and biases which do not belong to the current neuron (class)
-            w_others = K.sum(self.w, axis=1) - self.w[:, curr_neuron_idx]
-            b_others = K.sum(self.b) - self.b[curr_neuron_idx]
-
-            w_tmp = self.w[:, curr_neuron_idx] - w_others
-            b_tmp = self.b[curr_neuron_idx] - b_others
-
-            z = K.dot(x, w_tmp[:, None]) + b_tmp
-
-            # Append result to the output tensor
-            if out is None:
-                out = z
-            else:
-                out = K.concatenate([out, z])
-
-        return out
-
-    def _reverse_logsumexp_pooling(self, x):
-        """
-        Performs reverse log-sum-exp pooling over each neuron (class)
-        (although calculating it only for the target class should be enough,
-        this way we don't need to track the additional 'target_class' param;
-        might change in the future).
-
-        :param x: Input tensor
-        :return: Reverse log-sum-exp pooling
-        """
-
-        num_of_neurons = x.shape[-1]
-        out = None
-
-        for curr_neuron_idx in range(num_of_neurons):
-            # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx'
-            score = -K.log(K.sum(K.exp(-x)) - K.exp(-x[:, curr_neuron_idx]))
-            score = K.reshape(score, (1,))
-
-            # Append result to the output tensor
-            if out is None:
-                out = score
-            else:
-                out = K.concatenate([out, score])
-
-        # Make sure the output has the correct shape
-        # TODO Check if this works for more than 2 neurons
-        out = K.expand_dims(out, axis=0)
-
-        return out
+    # def _log_probability_ratios(self, x):
+    #     """
+    #     Function to calculate the log-probability ratios.
+    #
+    #     :param x: Input tensor
+    #     :return: Log-probability ratios
+    #     """
+    #
+    #     num_of_neurons = self.w.shape[-1]
+    #     out = None
+    #
+    #     for curr_neuron_idx in range(num_of_neurons):
+    #         # Sum up all weights and biases which do not belong to the current neuron (class)
+    #         w_others = K.sum(self.w, axis=1) - self.w[:, curr_neuron_idx]
+    #         b_others = K.sum(self.b) - self.b[curr_neuron_idx]
+    #
+    #         w_tmp = self.w[:, curr_neuron_idx] - w_others
+    #         b_tmp = self.b[curr_neuron_idx] - b_others
+    #
+    #         z = K.dot(x, w_tmp[:, None]) + b_tmp
+    #
+    #         # Append result to the output tensor
+    #         if out is None:
+    #             out = z
+    #         else:
+    #             out = K.concatenate([out, z])
+    #
+    #     return out
+    #
+    # def _reverse_logsumexp_pooling(self, x):
+    #     """
+    #     Performs reverse log-sum-exp pooling over each neuron (class)
+    #     (although calculating it only for the target class should be enough,
+    #     this way we don't need to track the additional 'target_class' param;
+    #     might change in the future).
+    #
+    #     :param x: Input tensor
+    #     :return: Reverse log-sum-exp pooling
+    #     """
+    #
+    #     num_of_neurons = x.shape[-1]
+    #     out = None
+    #
+    #     for curr_neuron_idx in range(num_of_neurons):
+    #         # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx'
+    #         score = -K.log(K.sum(K.exp(-x)) - K.exp(-x[:, curr_neuron_idx]))
+    #         score = K.reshape(score, (1,))
+    #
+    #         # Append result to the output tensor
+    #         if out is None:
+    #             out = score
+    #         else:
+    #             out = K.concatenate([out, score])
+    #
+    #     # Make sure the output has the correct shape
+    #     # TODO Check if this works for more than 2 neurons
+    #     out = K.expand_dims(out, axis=0)
+    #
+    #     return out
