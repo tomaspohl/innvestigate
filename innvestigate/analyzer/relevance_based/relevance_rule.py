@@ -716,7 +716,7 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         print('Apply MinTakeMostRule class')
         grad = ilayers.GradientWRT(len(Xs))
 
-        Xs_exp = K.exp(-K.variable(Xs, dtype='float32'))
+        Xs_exp = K.exp(-np.array(Xs, dtype='float32'))
 
         # Get activations.
         Zs = kutils.apply(self._layer_wo_act_b, Xs_exp)
