@@ -717,7 +717,7 @@ class LogProbalityRatio(keras.layers.Layer):
                   'output_dim': self.output_dim,
                   'kernel_initializer': self.kernel_initializer,
                   'bias_initializer': self.bias_initializer,
-                  'weights_original_layer': self.weights_orig_layer}
+                  'weights_orig_layer': self.weights_orig_layer}
 
         base_config = super(LogProbalityRatio, self).get_config()
 
