@@ -441,6 +441,11 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
                     for a, b in zip(Rs, Zs)]
             # Propagate the relevance to the input neurons
             # using the gradient
+
+            print("ALPHABETA - X1:", X1)
+            print("ALPHABETA - Z1:", Z1)
+            print("ALPHABETA - tmp:", tmp)
+
             tmp1 = iutils.to_list(grad(X1+Z1+tmp))
             tmp2 = iutils.to_list(grad(X2+Z2+tmp))
             # Re-weight relevance with the input values.
@@ -736,12 +741,14 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
                for a, b in zip(Rs, Zs)]
 
         #Xs_exp = K.print_tensor(Xs, 'xs_esp: ')
-        Zs = K.print_tensor(Zs, 'Zs: ')
-        tmp = K.print_tensor(tmp, 'tmp: ')
+        # Zs = K.print_tensor(Zs, 'Zs: ')
+        # tmp = K.print_tensor(tmp, 'tmp: ')
+        #
+        # tmp2 = K.print_tensor((Xs+Zs+tmp), "TMP2")
 
-        tmp2 = K.print_tensor((Xs+Zs+tmp), "TMP2")
-
-        print("Why no list?", tmp2)
+        print("MINTAKESMOST - Xs:", Xs)
+        print("MINTAKESMOST - Zs:", Zs)
+        print("MINTAKESMOST - tmp:", tmp)
 
         # Propagate the relevance to input neurons using the gradient.
         tmp = iutils.to_list(grad(Xs+Zs+tmp))
