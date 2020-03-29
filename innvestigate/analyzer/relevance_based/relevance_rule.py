@@ -724,7 +724,9 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         print("Xs SHAPE", len(Xs))
         # Xs gives: [<tf.Tensor 'log_probality_ratio_1/concat:0' shape=(?, 2) dtype=float32>],
         # so take the tensor from the list
-        Xs_exp = K.exp(-Xs[0])
+        # Xs_exp = K.exp(-Xs[0])
+
+        Xs_exp = keras.layers.Lambda(K.exp)(-Xs[0])
 
         # Get activations.
         Zs = kutils.apply(self._layer_wo_act_b, Xs_exp)
@@ -742,7 +744,7 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         print("Why no list?", tmp2)
 
         # Propagate the relevance to input neurons using the gradient.
-        tmp = iutils.to_list(grad(iutils.to_list(tmp2)))
+        tmp = iutils.to_list(grad(Xs_exp+Zs+tmp))
 
         # Re-weight relevance with the input values.
         return [keras.layers.Multiply()([a, b])
