@@ -418,10 +418,6 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
 
 
     def apply(self, Xs, Ys, Rs, reverse_state):
-
-        print("AlphABeta XSXSXSXSXSXSXS", Xs)
-        print("AlphABeta Xs len", len(Xs))
-
         #this method is correct, but wasteful
         grad = ilayers.GradientWRT(len(Xs))
         times_alpha = keras.layers.Lambda(lambda x: x * self._alpha)
@@ -441,11 +437,6 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
                     for a, b in zip(Rs, Zs)]
             # Propagate the relevance to the input neurons
             # using the gradient
-
-            print("ALPHABETA - X1:", X1)
-            print("ALPHABETA - Z1:", Z1)
-            print("ALPHABETA - tmp:", tmp)
-
             tmp1 = iutils.to_list(grad(X1+Z1+tmp))
             tmp2 = iutils.to_list(grad(X2+Z2+tmp))
             # Re-weight relevance with the input values.
@@ -700,9 +691,6 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
     """
 
     def __init__(self, layer, state, copy_weights=False, bias=True):
-
-        print('Init MinTakeMostRule class')
-
         # Make weights equal to one
         if copy_weights:
             weights = layer.get_weights()
@@ -722,28 +710,14 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
             name_template="reversed_kernel_%s")
 
     def apply(self, Xs, Ys, Rs, reverse_state):
-        print('Apply MinTakeMostRule class')
+        print('Apply MinTakeMostRule')
         grad = ilayers.GradientWRT(len(Xs))
 
-        print("XSXSXSXSXSXSXS", Xs)
-        print("Xs SHAPE", len(Xs))
-        # Xs gives: [<tf.Tensor 'log_probality_ratio_1/concat:0' shape=(?, 2) dtype=float32>],
-        # so take the tensor from the list
-        # Xs_exp = K.exp(-Xs[0])
-
-        # neg_ones = K.constant(-1, dtype='float32', shape=K.int_shape(Xs[0]))
-
-        # print("Neg_ones :", neg_ones)
-
-        # Xs_neg = [keras.layers.Multiply()([a, b])
-        #           for a, b in zip(Xs, neg_ones)]
-
+        # Multiply the input with -1.
         to_negative = keras.layers.Lambda(lambda x: x * -1)
-
         Xs_neg = [to_negative(x) for x in Xs]
 
-        print("Xs_neg :", Xs_neg)
-
+        # Apply element-wise exp().
         Xs_neg_exp = [keras.layers.Lambda(K.exp)(Xs_neg[0])]
 
         # Get activations.
@@ -752,11 +726,6 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         # Divide incoming relevance by the activations.
         tmp = [ilayers.SafeDivide()([a, b])
                for a, b in zip(Rs, Zs)]
-
-        print("MINTAKESMOST - Xs:", Xs)
-        print("MINTAKESMOST - Xs_neg_exp:", Xs_neg_exp)
-        print("MINTAKESMOST - Zs:", Zs)
-        print("MINTAKESMOST - tmp:", tmp)
 
         # Propagate the relevance to input neurons using the gradient.
         tmp = iutils.to_list(grad(Xs_neg_exp+Zs+tmp))

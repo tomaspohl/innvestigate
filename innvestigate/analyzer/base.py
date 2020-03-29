@@ -581,8 +581,7 @@ class ReverseAnalyzerBase(AnalyzerNetworkBase):
                  reverse_keep_tensors=False,
                  reverse_reapply_on_copied_layers=False,
                  **kwargs):
-        #self._reverse_verbose = reverse_verbose
-        self._reverse_verbose = True
+        self._reverse_verbose = reverse_verbose
         self._reverse_clip_values = reverse_clip_values
         self._reverse_project_bottleneck_layers = (
             reverse_project_bottleneck_layers)
