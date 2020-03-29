@@ -726,26 +726,26 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         # so take the tensor from the list
         # Xs_exp = K.exp(-Xs[0])
 
-        Xs_exp = keras.layers.Lambda(K.exp)(-Xs[0])
+        # Xs_exp = keras.layers.Lambda(K.exp)(-Xs[0])
 
         # Get activations.
-        Zs = kutils.apply(self._layer_wo_act_b, Xs_exp)
+        Zs = kutils.apply(self._layer_wo_act_b, Xs)
 
         # Divide incoming relevance by the activations.
         tmp = [ilayers.SafeDivide()([a, b])
                for a, b in zip(Rs, Zs)]
 
-        Xs_exp = K.print_tensor(Xs_exp, 'xs_esp: ')
+        #Xs_exp = K.print_tensor(Xs, 'xs_esp: ')
         Zs = K.print_tensor(Zs, 'Zs: ')
         tmp = K.print_tensor(tmp, 'tmp: ')
 
-        tmp2 = K.print_tensor((Xs_exp+Zs+tmp), "TMP2")
+        tmp2 = K.print_tensor((Xs+Zs+tmp), "TMP2")
 
         print("Why no list?", tmp2)
 
         # Propagate the relevance to input neurons using the gradient.
-        tmp = iutils.to_list(grad(Xs_exp+Zs+tmp))
+        tmp = iutils.to_list(grad(Xs+Zs+tmp))
 
         # Re-weight relevance with the input values.
         return [keras.layers.Multiply()([a, b])
-                for a, b in zip(Xs_exp, tmp)]
+                for a, b in zip(Xs, tmp)]
