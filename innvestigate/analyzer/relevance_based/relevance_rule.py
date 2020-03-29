@@ -731,7 +731,7 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         # so take the tensor from the list
         # Xs_exp = K.exp(-Xs[0])
 
-        Xs_neg_exp = keras.layers.Lambda(K.exp)(-Xs[0])
+        Xs_neg_exp = [keras.layers.Lambda(K.exp)(Xs[0])]
 
         # Get activations.
         Zs = kutils.apply(self._layer_wo_act_b, Xs_neg_exp)
