@@ -727,13 +727,13 @@ class LogProbalityRatio(keras.layers.Layer):
         return (input_shape[0], self.output_dim)
 
 
-class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
+class ReverseLogSumExpPooling(keras.layers.Layer):
 
     def __init__(self, output_dim, use_bias=True, **kwargs):
         self.output_dim = output_dim
         self.use_bias = use_bias
 
-        super(ReverseLogSumExpPoolingLayer, self).__init__(**kwargs)
+        super(ReverseLogSumExpPooling, self).__init__(**kwargs)
 
     def build(self, input_shape):
         # Create a weight variable for this layer.
@@ -747,7 +747,7 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
                                     initializer='zeros',
                                     trainable=False)
 
-        super(ReverseLogSumExpPoolingLayer, self).build(input_shape)
+        super(ReverseLogSumExpPooling, self).build(input_shape)
 
     def call(self, x):
         num_of_neurons = x.shape[-1]
@@ -783,7 +783,7 @@ class ReverseLogSumExpPoolingLayer(keras.layers.Layer):
         config = {'use_bias': True,
                   'output_dim': self.output_dim}
 
-        base_config = super(ReverseLogSumExpPoolingLayer, self).get_config()
+        base_config = super(ReverseLogSumExpPooling, self).get_config()
 
         return dict(list(base_config.items()) + list(config.items()))
 
