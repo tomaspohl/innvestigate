@@ -731,12 +731,16 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         # so take the tensor from the list
         # Xs_exp = K.exp(-Xs[0])
 
-        neg_ones = K.constant(-1, dtype='float32', shape=K.int_shape(Xs[0]))
+        # neg_ones = K.constant(-1, dtype='float32', shape=K.int_shape(Xs[0]))
 
-        print("Neg_ones :", neg_ones)
+        # print("Neg_ones :", neg_ones)
 
-        Xs_neg = [keras.layers.Multiply()([a, b])
-                  for a, b in zip(Xs, neg_ones)]
+        # Xs_neg = [keras.layers.Multiply()([a, b])
+        #           for a, b in zip(Xs, neg_ones)]
+
+        to_negative = keras.layers.Lambda(lambda x: x * -1)
+
+        Xs_neg = [to_negative(x) for x in Xs]
 
         print("Xs_neg :", Xs_neg)
 
