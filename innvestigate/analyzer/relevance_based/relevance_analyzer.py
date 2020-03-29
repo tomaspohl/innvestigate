@@ -899,7 +899,7 @@ class LRPModifiedTopLayer(LRPComposite):
         # Perform top-layer modification
         model = self._modify_top_layer(model)
 
-        self._check_top_layer_rule(rule)
+        # self._check_top_layer_rule(rule)
 
         super(LRPModifiedTopLayer, self).__init__(model, *args,
                                                   rule=rule, **kwargs)

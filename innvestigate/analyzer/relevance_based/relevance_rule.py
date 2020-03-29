@@ -418,6 +418,10 @@ class AlphaBetaRule(kgraph.ReverseMappingBase):
 
 
     def apply(self, Xs, Ys, Rs, reverse_state):
+
+        print("AlphABeta XSXSXSXSXSXSXS", Xs)
+        print("AlphABeta Xs len", len(Xs))
+
         #this method is correct, but wasteful
         grad = ilayers.GradientWRT(len(Xs))
         times_alpha = keras.layers.Lambda(lambda x: x * self._alpha)
