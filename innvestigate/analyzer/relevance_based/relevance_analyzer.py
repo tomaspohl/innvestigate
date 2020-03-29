@@ -209,7 +209,7 @@ class BatchNormalizationReverseLayer(kgraph.ReverseMappingBase):
     """Special BN handler that applies the Z-Rule"""
 
     def __init__(self, layer, state):
-        print("in BatchNormalizationReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
+        ##print("in BatchNormalizationReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
         config = layer.get_config()
 
         self._center = config['center']
@@ -916,7 +916,7 @@ class LRPModifiedTopLayer(LRPComposite):
 
     def _custom_kernel_init(self, shape, dtype=None):
         """
-        Callable kernel initializer that return the weights of the original replaced layer.
+        Callable kernel initializer that returns the weights of the original replaced layer.
         :param shape: Shape of the kernel
         :param dtype: Dtype of the kernel
         :return: Kernel initializer
@@ -925,7 +925,7 @@ class LRPModifiedTopLayer(LRPComposite):
 
     def _custom_bias_init(self, shape, dtype=None):
         """
-        Callable kernel initializer that return the biases of the original replaced layer.
+        Callable kernel initializer that returns the biases of the original replaced layer.
         :param shape: Shape of the bias
         :param dtype: Dtype of the bias
         :return: Bias initializer
