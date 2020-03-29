@@ -731,7 +731,14 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
         # so take the tensor from the list
         # Xs_exp = K.exp(-Xs[0])
 
-        Xs_neg_exp = [keras.layers.Lambda(K.exp)(Xs[0])]
+        neg_ones = K.constant(-1, dtype='float32', shape=Xs[0].shape[-1])
+
+        print("Neg_ones :", neg_ones)
+
+        Xs_neg = [keras.layers.Multiply()([a, b])
+                  for a, b in zip(Xs, neg_ones)]
+
+        Xs_neg_exp = [keras.layers.Lambda(K.exp)(Xs_neg[0])]
 
         # Get activations.
         Zs = kutils.apply(self._layer_wo_act_b, Xs_neg_exp)
