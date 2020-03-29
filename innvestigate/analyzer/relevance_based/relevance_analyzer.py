@@ -953,7 +953,7 @@ class LRPModifiedTopLayer(LRPComposite):
                                       bias_initializer=self._custom_bias_init,
                                       weights_orig_layer=self.weights_orig_layer)(x)
         # x = keras.layers.Lambda(self._log_probability_ratios)(x)
-        x = ilayers.ReverseLogSumExpPoolingLayer(output_dim=2)(x)
+        x = ilayers.ReverseLogSumExpPooling(output_dim=2)(x)
         # x = keras.layers.Lambda(self._reverse_logsumexp_pooling)(x)
 
         # Construct the modified model
