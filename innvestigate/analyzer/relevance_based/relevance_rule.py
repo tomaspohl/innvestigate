@@ -186,43 +186,68 @@ class WSquareRule(kgraph.ReverseMappingBase):
         return tmp
 
 
+class InputTimesWSquareRule(WSquareRule):
+    """Same as the W**2 rule, but the weights are multiplied with the Input."""
 
-class InputTimesWSquareRule(kgraph.ReverseMappingBase):
-    """Same as W**2 rule but multiplied with the Input."""
-
-    def __init__(self, layer, state, copy_weights=False):
-        # W-square rule works with squared weights and no biases.
-        if copy_weights:
-            weights = layer.get_weights()
-        else:
-            weights = layer.weights
-        if layer.use_bias:
-            weights = weights[:-1]
-        weights = [x**2 for x in weights]
-
-        self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
-            layer,
-            keep_bias=False,
-            weights=weights,
-            name_template="reversed_kernel_%s")
+    def __init__(self, *args, **kwargs):
+        super(InputTimesWSquareRule, self).__init__(*args, **kwargs)
 
 
     def apply(self, Xs, Ys, Rs, reverse_state):
         grad = ilayers.GradientWRT(len(Xs))
-        # Create dummy forward path to take the derivative below.
-        Ys = kutils.apply(self._layer_wo_act_b, Xs)
 
-        # Compute the sum of the weights.
-        ones = ilayers.OnesLike()(Xs)
-        Zs = iutils.to_list(self._layer_wo_act_b(ones))
-        # Weight the incoming relevance.
+        # Get activations.
+        Zs = kutils.apply(self._layer_wo_act_b, Xs)
+        # Divide incoming relevance by the activations.
         tmp = [ilayers.SafeDivide()([a, b])
                for a, b in zip(Rs, Zs)]
-        # Redistribute the relevances along the gradient.
-        tmp = iutils.to_list(grad(Xs+Ys+tmp))
+        # Propagate the relevance to input neurons using the gradient.
+        tmp = iutils.to_list(grad(Xs+Zs+tmp))
         # Re-weight relevance with the input values.
         return [keras.layers.Multiply()([a, b])
                 for a, b in zip(Xs, tmp)]
+
+# class InputTimesWSquareRule(kgraph.ReverseMappingBase):
+#     """
+#     Same as W**2 rule but multiplied with the Input.
+#
+#     This implementation does not retain the Conservation property
+#     (the activation is only added to the nominator).
+#     """
+#
+#     def __init__(self, layer, state, copy_weights=False):
+#         # W-square rule works with squared weights and no biases.
+#         if copy_weights:
+#             weights = layer.get_weights()
+#         else:
+#             weights = layer.weights
+#         if layer.use_bias:
+#             weights = weights[:-1]
+#         weights = [x**2 for x in weights]
+#
+#         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
+#             layer,
+#             keep_bias=False,
+#             weights=weights,
+#             name_template="reversed_kernel_%s")
+#
+#
+#     def apply(self, Xs, Ys, Rs, reverse_state):
+#         grad = ilayers.GradientWRT(len(Xs))
+#         # Create dummy forward path to take the derivative below.
+#         Ys = kutils.apply(self._layer_wo_act_b, Xs)
+#
+#         # Compute the sum of the weights.
+#         ones = ilayers.OnesLike()(Xs)
+#         Zs = iutils.to_list(self._layer_wo_act_b(ones))
+#         # Weight the incoming relevance.
+#         tmp = [ilayers.SafeDivide()([a, b])
+#                for a, b in zip(Rs, Zs)]
+#         # Redistribute the relevances along the gradient.
+#         tmp = iutils.to_list(grad(Xs+Ys+tmp))
+#         # Re-weight relevance with the input values.
+#         return [keras.layers.Multiply()([a, b])
+#                 for a, b in zip(Xs, tmp)]
 
 
 
