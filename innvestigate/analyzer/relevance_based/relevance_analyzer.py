@@ -418,7 +418,7 @@ class LRP(base.ReverseAnalyzerBase):
         super(LRP, self).__init__(model, *args, **kwargs)
 
     def create_rule_mapping(self, layer, reverse_state):
-        print("in select_rule:", layer.__class__.__name__ , end='->') #debug
+        ##print("in select_rule:", layer.__class__.__name__ , end='->') #debug
         rule_class = None
         if self._rules_use_conditions is True:
             for condition, rule in self._rules:
