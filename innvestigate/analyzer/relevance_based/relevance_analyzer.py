@@ -437,7 +437,6 @@ class LRP(base.ReverseAnalyzerBase):
             rule_class = LRP_RULES[rule_class]
         rule = rule_class(layer, reverse_state)
 
-        print("Rule:", rule)
         return rule.apply
 
     def _create_analysis(self, *args, **kwargs):
