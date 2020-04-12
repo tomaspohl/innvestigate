@@ -34,7 +34,7 @@ from . import utils as rutils
 # DTD rules are special cases of LRP rules with additional assumptions
 __all__ = [
     #dedicated treatment for special layers
-    "MinTakeMostRule",
+    "MinTakeMostRule", ##own
 
     #general rules
     "ZRule",
@@ -44,10 +44,10 @@ __all__ = [
     "EpsilonIgnoreBiasRule",
 
     "WSquareRule",
-    "InputTimesWSquareRule",
+    "WSqrtRule", ##own TODO: check negative weights
+    "WLogRule", ##own TODO: check negative weights
+    "InputTimesWSquareRule", ##own
     "FlatRule",
-    "FlatSqrtRule",
-    "FlatSquareRule",
 
     "AlphaBetaRule",
     "AlphaBetaIgnoreBiasRule",
@@ -60,8 +60,8 @@ __all__ = [
 
     "ZPlusRule",
     "ZPlusFastRule",
-    "ZPlusSqrtRule",
-    "ZPlusSqrtRuleIgnoreBias",
+    "ZPlusSqrtRule", ##own TODO
+    "ZPlusSqrtRuleIgnoreBias", ##own TODO
     "BoundedRule"
 ]
 
@@ -207,48 +207,56 @@ class InputTimesWSquareRule(WSquareRule):
         return [keras.layers.Multiply()([a, b])
                 for a, b in zip(Xs, tmp)]
 
-# class InputTimesWSquareRule(kgraph.ReverseMappingBase):
-#     """
-#     Same as W**2 rule but multiplied with the Input.
-#
-#     This implementation does not retain the Conservation property
-#     (the activation is only added to the nominator).
-#     """
-#
-#     def __init__(self, layer, state, copy_weights=False):
-#         # W-square rule works with squared weights and no biases.
-#         if copy_weights:
-#             weights = layer.get_weights()
-#         else:
-#             weights = layer.weights
-#         if layer.use_bias:
-#             weights = weights[:-1]
-#         weights = [x**2 for x in weights]
-#
-#         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
-#             layer,
-#             keep_bias=False,
-#             weights=weights,
-#             name_template="reversed_kernel_%s")
-#
-#
-#     def apply(self, Xs, Ys, Rs, reverse_state):
-#         grad = ilayers.GradientWRT(len(Xs))
-#         # Create dummy forward path to take the derivative below.
-#         Ys = kutils.apply(self._layer_wo_act_b, Xs)
-#
-#         # Compute the sum of the weights.
-#         ones = ilayers.OnesLike()(Xs)
-#         Zs = iutils.to_list(self._layer_wo_act_b(ones))
-#         # Weight the incoming relevance.
-#         tmp = [ilayers.SafeDivide()([a, b])
-#                for a, b in zip(Rs, Zs)]
-#         # Redistribute the relevances along the gradient.
-#         tmp = iutils.to_list(grad(Xs+Ys+tmp))
-#         # Re-weight relevance with the input values.
-#         return [keras.layers.Multiply()([a, b])
-#                 for a, b in zip(Xs, tmp)]
 
+class WSqrtRule(WSquareRule):
+    """
+    Same as W**2 rule, but instead of the squaring operation,
+    the sqrt() operation is applied.
+    """
+
+    def __init__(self, layer, state, copy_weights=False):
+        # W-sqrt rule works with square-rooted weights and no biases.
+        if copy_weights:
+            weights = layer.get_weights()
+        else:
+            weights = layer.weights
+        if layer.use_bias:
+            weights = weights[:-1]
+
+        weights = [np.sqrt(x) for x in weights]
+
+        self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
+            layer,
+            keep_bias=False,
+            weights=weights,
+            name_template="reversed_kernel_%s")
+
+
+class WLogRule(WSquareRule):
+    """
+    Same as W**2 rule, but instead of the squaring operation,
+    the log() operation is applied.
+
+    The weights are also shifted to the left by one unit (i.e. we add +1)
+    so the positive relevances remain positive (because of the log() function).
+    """
+
+    def __init__(self, layer, state, copy_weights=False):
+        # W-log rule works with logged weights and no biases.
+        if copy_weights:
+            weights = layer.get_weights()
+        else:
+            weights = layer.weights
+        if layer.use_bias:
+            weights = weights[:-1]
+
+        weights = [np.log(x+1) for x in weights]
+
+        self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
+            layer,
+            keep_bias=False,
+            weights=weights,
+            name_template="reversed_kernel_%s")
 
 
 class FlatRule(WSquareRule):
@@ -273,102 +281,6 @@ class FlatRule(WSquareRule):
             keep_bias=False,
             weights=weights,
             name_template="reversed_kernel_%s")
-
-
-
-class FlatSqrtRule(FlatRule):
-    """
-    Same as W**2 rule but sets all weights to ones (=FlatRule)
-    and also takes the root of the Relevance.
-    """
-
-    def apply(self, Xs, Ys, Rs, reverse_state):
-        grad = ilayers.GradientWRT(len(Xs))
-        # Create dummy forward path to take the derivative below.
-        Ys = kutils.apply(self._layer_wo_act_b, Xs)
-
-        # Compute the sum of the weights.
-        ones = ilayers.OnesLike()(Xs)
-        Zs = iutils.to_list(self._layer_wo_act_b(ones))
-        # Weight the incoming relevance.
-        tmp = [ilayers.SafeDivide()([a, b])
-               for a, b in zip(Rs, Zs)]
-        # Redistribute the relevances along the gradient.
-        g = grad(Xs+Ys+tmp)
-        # Apply sqrt()
-        g_sqrt = keras.layers.Lambda(K.sqrt)(g)
-        tmp = iutils.to_list(g_sqrt)
-
-        return tmp
-
-
-
-class FlatSquareRule(FlatRule):
-    """
-    Same as W**2 rule but sets all weights to ones (=FlatRule)
-    and also takes the square of the Relevance.
-    """
-
-    def apply(self, Xs, Ys, Rs, reverse_state):
-        grad = ilayers.GradientWRT(len(Xs))
-
-        # Create dummy forward path to take the derivative below.
-        Ys = kutils.apply(self._layer_wo_act_b, Xs)
-
-        # Compute the sum of the weights.
-        ones = ilayers.OnesLike()(Xs)
-        Zs = iutils.to_list(self._layer_wo_act_b(ones))
-
-        # Weight the incoming relevance.
-        tmp = [ilayers.SafeDivide()([a, b])
-               for a, b in zip(Rs, Zs)]
-
-        # Redistribute the relevances along the gradient.
-        g = grad(Xs + Ys + tmp)
-
-        # Apply square()
-        g_square = keras.layers.Lambda(K.square)(g)
-        tmp = iutils.to_list(g_square)
-
-        return tmp
-
-        # Custom:
-        # Xs = keras.layers.Lambda(K.square)(Xs)
-
-        # Get activations.
-        # Zs = kutils.apply(self._layer_wo_act_b, Xs)
-        #
-        #
-        #
-        # # Compute the sum of the weights.
-        # # ones = ilayers.OnesLike()(Xs)
-        # # Zs = iutils.to_list(self._layer_wo_act_b(ones))
-        # # Weight the incoming relevance.
-        # tmp = [ilayers.SafeDivide()([a, b])
-        #        for a, b in zip(Rs, Zs)]
-        # # Redistribute the relevances along the gradient.
-        # # g = grad(Xs+Ys+tmp)
-        #
-        # # Our contrib:
-        # # Make sure the relevance is always > 0
-        # # g = keras.layers.Lambda(K.abs)(g)
-        # # Move the Log function 1 unit to the left
-        # # g_ones = ilayers.OnesLike()(g)
-        # # g = keras.layers.Add()([g, g_ones])
-        # # Apply exp()
-        # # g = keras.layers.Lambda(K.exp)(g)
-        #
-        # # Redistribute the relevance along the gradient.
-        # tmp = iutils.to_list(grad(Xs+Ys+tmp))
-        #
-        # # Re-weight relevance with the input values.
-        # return [keras.layers.Multiply()([a, b])
-        #         for a, b in zip(Xs, tmp)]
-
-        # tmp = iutils.to_list(g)
-
-        # return tmp
-
 
 
 class AlphaBetaRule(kgraph.ReverseMappingBase):
