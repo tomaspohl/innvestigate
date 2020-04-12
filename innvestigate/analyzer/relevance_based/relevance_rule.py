@@ -251,7 +251,11 @@ class WLogRule(WSquareRule):
         if layer.use_bias:
             weights = weights[:-1]
 
-        weights = [np.log(x+1) for x in weights]
+        weights = [keras.layers.Add()([1.0, x])
+                   for x in weights]
+
+        weights = [keras.layers.Lambda(K.log)(x)
+                   for x in weights]
 
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
