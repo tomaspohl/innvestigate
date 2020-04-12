@@ -46,10 +46,10 @@ __all__ = [
     "LRPEpsilonIgnoreBias",
 
     "LRPWSquare",
+    "LRPWSqrt",
+    "LRPWLog",
     "LRPInputTimesWSquare",
     "LRPFlat",
-    "LRPFlatSqrt",
-    "LRPFlatSquare",
 
     "LRPAlphaBeta",
 
@@ -183,10 +183,10 @@ LRP_RULES = {
     "EpsilonIgnoreBias": rrule.EpsilonIgnoreBiasRule,
 
     "WSquare": rrule.WSquareRule,
+    "WSqrt": rrule.WSqrtRule,
+    "WLog": rrule.WLogRule,
     "InputTimesWSquare": rrule.InputTimesWSquareRule,
     "Flat": rrule.FlatRule,
-    "FlatSqrt": rrule.FlatSqrtRule,
-    "FlatSquare": rrule.FlatSquareRule,
 
     "AlphaBeta": rrule.AlphaBetaRule,
     "AlphaBetaIgnoreBias": rrule.AlphaBetaIgnoreBiasRule,
@@ -595,27 +595,26 @@ class LRPInputTimesWSquare(_LRPFixedParams):
         super(LRPInputTimesWSquare, self).__init__(model, *args, rule="InputTimesWSquare", **kwargs)
 
 
+class LRPWSqrt(_LRPFixedParams):
+    """LRP-analyzer that uses the WSqrt"""
+
+    def __init__(self, model, *args, **kwargs):
+        super(LRPWSqrt, self).__init__(model, *args, rule="WSqrt", **kwargs)
+
+
+class LRPWLog(_LRPFixedParams):
+    """LRP-analyzer that uses the WLog"""
+
+    def __init__(self, model, *args, **kwargs):
+        super(LRPWLog, self).__init__(model, *args, rule="WLog", **kwargs)
+
+
 class LRPFlat(_LRPFixedParams):
     """LRP-analyzer that uses the LRP-Flat rule"""
 
     def __init__(self, model, *args, **kwargs):
         super(LRPFlat, self).__init__(model, *args,
                                       rule="Flat", **kwargs)
-
-class LRPFlatSqrt(_LRPFixedParams):
-    """LRP-analyzer that uses the LRP-FlatSqrt rule"""
-
-    def __init__(self, model, *args, **kwargs):
-        super(LRPFlatSqrt, self).__init__(model, *args,
-                                      rule="FlatSqrt", **kwargs)
-
-
-class LRPFlatSquare(_LRPFixedParams):
-    """LRP-analyzer that uses the LRP-FlatSqrt rule"""
-
-    def __init__(self, model, *args, **kwargs):
-        super(LRPFlatSquare, self).__init__(model, *args,
-                                      rule="FlatSquare", **kwargs)
 
 
 class LRPAlphaBeta(LRP):
