@@ -251,8 +251,7 @@ class WLogRule(WSquareRule):
         if layer.use_bias:
             weights = weights[:-1]
 
-        weights = [keras.layers.Add()([K.variable(1.0), x])
-                   for x in weights]
+        weights = [x + 1 for x in weights]
 
         weights = [keras.layers.Lambda(K.log)(x)
                    for x in weights]
