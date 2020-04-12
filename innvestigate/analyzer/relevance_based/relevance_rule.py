@@ -223,7 +223,7 @@ class WSqrtRule(WSquareRule):
         if layer.use_bias:
             weights = weights[:-1]
 
-        weights = [np.sqrt(x) for x in weights]
+        weights = iutils.to_list(keras.layers.Lambda(K.sqrt)(weights))
 
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
