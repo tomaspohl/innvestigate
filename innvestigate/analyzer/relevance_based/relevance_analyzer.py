@@ -894,6 +894,7 @@ class LRPModifiedTopLayer(LRPComposite):
     def __init__(self, model, rule, *args, **kwargs):
         # Save the weights of the original top (output) layer
         self.weights_orig_layer = model.layers[-1].get_weights()
+        self.output_dim = model.layers[-1].output_shape[-1]
 
         # Perform top-layer modification
         model = self._modify_top_layer(model)
@@ -947,75 +948,13 @@ class LRPModifiedTopLayer(LRPComposite):
 
         # Add the two special layers
         x = model.layers[-1].output
-        x = ilayers.LogProbalityRatio(output_dim=2,
+        x = ilayers.LogProbalityRatio(output_dim=self.output_dim,
                                       kernel_initializer=self._custom_kernel_init,
                                       bias_initializer=self._custom_bias_init,
                                       weights_orig_layer=self.weights_orig_layer)(x)
-        # x = keras.layers.Lambda(self._log_probability_ratios)(x)
-        x = ilayers.ReverseLogSumExpPooling(output_dim=2)(x)
-        # x = keras.layers.Lambda(self._reverse_logsumexp_pooling)(x)
+        x = ilayers.ReverseLogSumExpPooling(output_dim=self.output_dim)(x)
 
         # Construct the modified model
         model = keras.models.Model(inputs=model.input, outputs=x)
 
         return model
-
-    # def _log_probability_ratios(self, x):
-    #     """
-    #     Function to calculate the log-probability ratios.
-    #
-    #     :param x: Input tensor
-    #     :return: Log-probability ratios
-    #     """
-    #
-    #     num_of_neurons = self.w.shape[-1]
-    #     out = None
-    #
-    #     for curr_neuron_idx in range(num_of_neurons):
-    #         # Sum up all weights and biases which do not belong to the current neuron (class)
-    #         w_others = K.sum(self.w, axis=1) - self.w[:, curr_neuron_idx]
-    #         b_others = K.sum(self.b) - self.b[curr_neuron_idx]
-    #
-    #         w_tmp = self.w[:, curr_neuron_idx] - w_others
-    #         b_tmp = self.b[curr_neuron_idx] - b_others
-    #
-    #         z = K.dot(x, w_tmp[:, None]) + b_tmp
-    #
-    #         # Append result to the output tensor
-    #         if out is None:
-    #             out = z
-    #         else:
-    #             out = K.concatenate([out, z])
-    #
-    #     return out
-    #
-    # def _reverse_logsumexp_pooling(self, x):
-    #     """
-    #     Performs reverse log-sum-exp pooling over each neuron (class)
-    #     (although calculating it only for the target class should be enough,
-    #     this way we don't need to track the additional 'target_class' param;
-    #     might change in the future).
-    #
-    #     :param x: Input tensor
-    #     :return: Reverse log-sum-exp pooling
-    #     """
-    #
-    #     num_of_neurons = x.shape[-1]
-    #     out = None
-    #
-    #     for curr_neuron_idx in range(num_of_neurons):
-    #         # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx'
-    #         score = -K.log(K.sum(K.exp(-x)) - K.exp(-x[:, curr_neuron_idx]))
-    #         score = K.reshape(score, (1,))
-    #
-    #         # Append result to the output tensor
-    #         if out is None:
-    #             out = score
-    #         else:
-    #             out = K.concatenate([out, score])
-    #
-    #     # Make sure the output has the correct shape
-    #     # TODO Check if this works for more than 2 neurons
-    #     out = K.expand_dims(out, axis=0)
-    #
-    #     return out
