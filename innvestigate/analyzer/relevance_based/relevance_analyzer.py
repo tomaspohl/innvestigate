@@ -58,8 +58,6 @@ __all__ = [
     "LRPAlpha1Beta0",
     "LRPAlpha1Beta0IgnoreBias",
     "LRPZPlus",
-    "LRPZPlusSqrt",
-    "LRPZPlusSqrtIgnoreBias",
     "LRPZPlusFast",
 
     "LRPSequentialPresetA",
@@ -197,7 +195,6 @@ LRP_RULES = {
     "Alpha1Beta0IgnoreBias": rrule.Alpha1Beta0IgnoreBiasRule,
 
     "ZPlus": rrule.ZPlusRule,
-    "ZPlusSqrt": rrule.ZPlusSqrtRule,
     "ZPlusFast": rrule.ZPlusFastRule,
     "Bounded": rrule.BoundedRule,
 
@@ -274,7 +271,7 @@ class AddReverseLayer(kgraph.ReverseMappingBase):
     """Special Add layer handler that applies the Z-Rule"""
 
     def __init__(self, layer, state):
-        print("in AddReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
+        ##print("in AddReverseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
         self._layer_wo_act = kgraph.copy_layer_wo_activation(layer,
                                                              name_template="reversed_kernel_%s")
 
@@ -305,7 +302,7 @@ class AveragePoolingReverseLayer(kgraph.ReverseMappingBase):
     """Special AveragePooling handler that applies the Z-Rule"""
 
     def __init__(self, layer, state):
-        print("in AveragePoolingRerseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
+        ##print("in AveragePoolingRerseLayer.init:", layer.__class__.__name__,"-> Dedicated ReverseLayer class" ) #debug
         self._layer_wo_act = kgraph.copy_layer_wo_activation(layer,
                                                              name_template="reversed_kernel_%s")
 
@@ -620,12 +617,11 @@ class LRPFlat(_LRPFixedParams):
 class LRPAlphaBeta(LRP):
     """ Base class for LRP AlphaBeta"""
 
-    def __init__(self, model, alpha=None, beta=None, bias=True, activators_sqrt=False, *args, **kwargs):
+    def __init__(self, model, alpha=None, beta=None, bias=True, *args, **kwargs):
         alpha, beta = rutils.assert_infer_lrp_alpha_beta_param(alpha, beta, self)
         self._alpha = alpha
         self._beta = beta
         self._bias = bias
-        self._activators_sqrt = activators_sqrt
 
         class AlphaBetaProxyRule(rrule.AlphaBetaRule):
             """
@@ -639,7 +635,6 @@ class LRPAlphaBeta(LRP):
                                                          alpha=alpha,
                                                          beta=beta,
                                                          bias=bias,
-                                                         activators_sqrt=activators_sqrt,
                                                          **kwargs)
 
         super(LRPAlphaBeta, self).__init__(model, *args,
@@ -732,30 +727,6 @@ class LRPZPlus(LRPAlpha1Beta0IgnoreBias):
     #TODO: assert that layer inputs are always >= 0
     def __init__(self, model, *args, **kwargs):
         super(LRPZPlus, self).__init__(model, *args, **kwargs)
-
-
-class LRPZPlusSqrt(LRPAlpha1Beta0):
-    """
-    The LRPZPlusSqrt rule uses the LRP-alpha-beta rule with a=1,b=0,
-    but takes the square root of the positive contributions.
-    """
-    #TODO: assert that layer inputs are always >= 0
-    def __init__(self, model, *args, **kwargs):
-        super(LRPZPlusSqrt, self).__init__(model, *args,
-                                           activators_sqrt=True,
-                                           **kwargs)
-
-
-class LRPZPlusSqrtIgnoreBias(LRPAlpha1Beta0IgnoreBias):
-    """
-    The LRPZPlusSqrt rule uses the LRP-alpha-beta rule with a=1,b=0 and ignored bias,
-    but takes the square root of the positive contributions.
-    """
-    # TODO: assert that layer inputs are always >= 0
-    def __init__(self, model, *args, **kwargs):
-        super(LRPZPlusSqrtIgnoreBias, self).__init__(model, *args,
-                                                     activators_sqrt=True,
-                                                     **kwargs)
 
 
 class LRPZPlusFast(_LRPFixedParams):

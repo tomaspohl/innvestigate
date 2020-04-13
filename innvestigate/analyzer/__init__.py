@@ -26,8 +26,6 @@ from .relevance_based.relevance_analyzer import LRP
 from .relevance_based.relevance_analyzer import LRPZ
 from .relevance_based.relevance_analyzer import LRPZIgnoreBias
 from .relevance_based.relevance_analyzer import LRPZPlus
-from .relevance_based.relevance_analyzer import LRPZPlusSqrt
-from .relevance_based.relevance_analyzer import LRPZPlusSqrtIgnoreBias
 from .relevance_based.relevance_analyzer import LRPZPlusFast
 from .relevance_based.relevance_analyzer import LRPEpsilon
 from .relevance_based.relevance_analyzer import LRPEpsilonIgnoreBias
@@ -105,8 +103,6 @@ analyzers = {
     "lrp.alpha_1_beta_0": LRPAlpha1Beta0,
     "lrp.alpha_1_beta_0_IB": LRPAlpha1Beta0IgnoreBias,
     "lrp.z_plus": LRPZPlus,
-    "lrp.z_plus_sqrt": LRPZPlusSqrt,
-    "lrp.z_plus_sqrt_IB": LRPZPlusSqrtIgnoreBias,
     "lrp.z_plus_fast": LRPZPlusFast,
 
     "lrp.sequential_preset_a": LRPSequentialPresetA,
