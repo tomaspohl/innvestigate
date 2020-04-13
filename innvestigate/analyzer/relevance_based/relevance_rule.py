@@ -216,13 +216,15 @@ class WSqrtRule(WSquareRule):
         # W-sqrt rule works with square-rooted weights and no biases.
         if copy_weights:
             weights = layer.get_weights()
+            if layer.use_bias:
+                weights = weights[:-1]
+            weights = [np.sqrt(x) for x in weights]
         else:
             weights = layer.weights
-        if layer.use_bias:
-            weights = weights[:-1]
-
-        weights = [keras.layers.Lambda(K.sqrt)(x)
-                   for x in weights]
+            if layer.use_bias:
+                weights = weights[:-1]
+            weights = [keras.layers.Lambda(K.sqrt)(x)
+                       for x in weights]
 
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
@@ -244,15 +246,27 @@ class WLogRule(WSquareRule):
         # W-log rule works with logged weights and no biases.
         if copy_weights:
             weights = layer.get_weights()
+            if layer.use_bias:
+                weights = weights[:-1]
+
+            # Make sure we only deal with positive numbers.
+            weights = [np.where(x <= 0, 1.e-10, x) for x in weights]
+            # Shift the log() function by one, so the positive weights remain positive.
+            weights = [x + 1 for x in weights]
+            # Apply log().
+            weights = [np.log(x) for x in weights]
         else:
             weights = layer.weights
-        if layer.use_bias:
-            weights = weights[:-1]
+            if layer.use_bias:
+                weights = weights[:-1]
 
-        weights = [x + 1 for x in weights]
-
-        weights = [keras.layers.Lambda(K.log)(x)
-                   for x in weights]
+            # Make sure we only deal with positive numbers.
+            weights = [K.tf.where(x <= 0, K.constant(1.e-10, shape=x.shape), x) for x in weights]
+            # Shift the log() function by one, so the positive weights remain positive.
+            weights = [x + 1 for x in weights]
+            # Apply log().
+            weights = [keras.layers.Lambda(K.log)(x)
+                       for x in weights]
 
         self._layer_wo_act_b = kgraph.copy_layer_wo_activation(
             layer,
