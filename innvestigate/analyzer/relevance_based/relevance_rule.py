@@ -44,8 +44,8 @@ __all__ = [
     "EpsilonIgnoreBiasRule",
 
     "WSquareRule",
-    "WSqrtRule", ##own TODO: check negative weights
-    "WLogRule", ##own TODO: check negative weights
+    "WSqrtRule", ##own
+    "WLogRule", ##own
     "InputTimesWSquareRule", ##own
     "FlatRule",
 
@@ -627,7 +627,6 @@ class MinTakeMostRule(kgraph.ReverseMappingBase):
             name_template="reversed_kernel_%s")
 
     def apply(self, Xs, Ys, Rs, reverse_state):
-        print('Apply MinTakeMostRule')
         grad = ilayers.GradientWRT(len(Xs))
 
         # Multiply the input with -1.

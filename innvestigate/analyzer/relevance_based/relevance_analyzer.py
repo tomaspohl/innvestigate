@@ -32,7 +32,6 @@ from . import relevance_rule as rrule
 from . import utils as rutils
 
 
-
 __all__ = [
     "BaselineLRPZ",
 
@@ -66,7 +65,8 @@ __all__ = [
     "LRPSequentialPresetAFlat",
     "LRPSequentialPresetBFlat",
 
-    "LRPComposite"
+    "LRPComposite",
+    "LRPModifiedTopLayer"
 ]
 
 
@@ -663,10 +663,6 @@ class LRPAlphaBeta(LRP):
         return kwargs
 
 
-
-
-
-
 class _LRPAlphaBetaFixedParams(LRPAlphaBeta):
 
     @classmethod
@@ -737,7 +733,7 @@ class LRPZPlusFast(_LRPFixedParams):
     #TODO: assert that layer inputs are always >= 0
     def __init__(self, model, *args, **kwargs):
         super(LRPZPlusFast, self).__init__(model, *args,
-                                       rule="ZPlusFast", **kwargs)
+                                           rule="ZPlusFast", **kwargs)
 
 
 class LRPSequentialPresetA(_LRPFixedParams): #for the lack of a better name
@@ -760,15 +756,14 @@ class LRPSequentialPresetA(_LRPFixedParams): #for the lack of a better name
                                                        bias=True,
                                                        **kwargs)
 
-
         conditional_rules = [(kchecks.is_dense_layer, EpsilonProxyRule),
                              (kchecks.is_conv_layer, rrule.Alpha1Beta0Rule)
-                            ]
+                             ]
 
         super(LRPSequentialPresetA, self).__init__(model,
-                                            *args,
-                                            rule = conditional_rules,
-                                            **kwargs )
+                                                   *args,
+                                                   rule=conditional_rules,
+                                                   **kwargs)
 
 
 class LRPSequentialPresetB(_LRPFixedParams):
@@ -790,40 +785,36 @@ class LRPSequentialPresetB(_LRPFixedParams):
                                                        bias=True,
                                                        **kwargs)
 
-
         conditional_rules = [(kchecks.is_dense_layer, EpsilonProxyRule),
                              (kchecks.is_conv_layer, rrule.Alpha2Beta1Rule)
-                            ]
+                             ]
+
         super(LRPSequentialPresetB, self).__init__(model,
-                                            *args,
-                                            rule = conditional_rules,
-                                            **kwargs )
+                                                   *args,
+                                                   rule=conditional_rules,
+                                                   **kwargs)
 
 
-
-
-
-#TODO: allow to pass input layer identification by index or id.
+# TODO: allow to pass input layer identification by index or id.
 class LRPSequentialPresetAFlat(LRPSequentialPresetA):
     """Special LRP-configuration for ConvNets"""
 
     def __init__(self, model, *args, **kwargs):
         super(LRPSequentialPresetAFlat, self).__init__(model,
-                                                *args,
-                                                input_layer_rule=rrule.FlatRule,
-                                                **kwargs)
+                                                       *args,
+                                                       input_layer_rule=rrule.FlatRule,
+                                                       **kwargs)
 
 
-
-#TODO: allow to pass input layer identiFication by index or id.
+# TODO: allow to pass input layer identiFication by index or id.
 class LRPSequentialPresetBFlat(LRPSequentialPresetB):
     """Special LRP-configuration for ConvNets"""
 
     def __init__(self, model, *args, **kwargs):
         super(LRPSequentialPresetBFlat, self).__init__(model,
-                                                *args,
-                                                input_layer_rule="Flat",
-                                                **kwargs)
+                                                       *args,
+                                                       input_layer_rule="Flat",
+                                                       **kwargs)
 
 
 class LRPComposite(LRP):
@@ -833,7 +824,7 @@ class LRPComposite(LRP):
         # self._check_rules(model, rule)
 
         super(LRPComposite, self).__init__(model, *args,
-                                      rule=rule, **kwargs)
+                                           rule=rule, **kwargs)
 
     def _check_rules(self, model, rules):
         """
@@ -848,7 +839,7 @@ class LRPComposite(LRP):
             if isinstance(l, ALLOWED_LAYERS_FOR_COMPOSITE_LRP):
                 l_count += 1
 
-        assert len(rules) == l_count,\
+        assert len(rules) == l_count, \
             "Number of specified rules must match the number of layers in the model." + \
             " Number of rules: " + str(len(rules)) + ". Number of layers: " + str(l_count)
 
@@ -869,7 +860,7 @@ class LRPModifiedTopLayer(LRPComposite):
         # Perform top-layer modification
         model = self._modify_top_layer(model)
 
-        # self._check_top_layer_rule(rule)
+        self._check_top_layer_rule(rule)
 
         super(LRPModifiedTopLayer, self).__init__(model, *args,
                                                   rule=rule, **kwargs)
@@ -901,7 +892,6 @@ class LRPModifiedTopLayer(LRPComposite):
         :return: Bias initializer
         """
         return self.weights_orig_layer[-1]
-
 
     def _modify_top_layer(self, model):
         """
