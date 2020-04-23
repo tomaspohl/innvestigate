@@ -754,21 +754,15 @@ class ReverseLogSumExpPooling(keras.layers.Layer):
         out = None
 
         for curr_neuron_idx in range(num_of_neurons):
-            # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx'
+            # Calculate reverse log-sum-exp pooling for neuron with index 'curr_neuron_idx',
+            # but make sure the log() is moved one unit to the left and the numbers are from (-1, inf)
             tmp = K.sum(K.exp(-x)) - K.exp(-x[:, curr_neuron_idx])
+            tmp = keras.layers.Add()([K.ones_like(tmp), tmp])
 
-            print('Why?')
-            tmp = K.print_tensor(tmp, 'Value b4 log: ')
-
-            tmp = keras.layers.Add()([K.ones_like(x), tmp])
-            # Make sure we only deal with positive numbers.
-            a = K.constant(0.00001)
-
-            a = K.print_tensor(a, 'A Value b4 where: ')
-            tmp = K.tf.where(tmp <= 0, a, tmp)
+            min_val = K.zeros_like(tmp) + 1e-10
+            tmp = K.tf.where(tmp <= 0, min_val, tmp)
 
             score = -K.log(tmp)
-
             score = K.reshape(score, (1,))
 
             # Append result to the output tensor
