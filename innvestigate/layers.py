@@ -760,9 +760,9 @@ class ReverseLogSumExpPooling(keras.layers.Layer):
             print('Why?')
             tmp = K.print_tensor(tmp, 'Value b4 log: ')
 
-            tmp = [x + 1 for x in tmp]
+            tmp = tmp + 1
             # Make sure we only deal with positive numbers.
-            tmp = [K.tf.where(x <= 0, K.constant(1.e-10, shape=x.shape), x) for x in tmp]
+            tmp = K.tf.where(tmp <= 0, K.constant(1.e-10, shape=tmp.shape), tmp)
 
             score = -K.log(tmp)
 
